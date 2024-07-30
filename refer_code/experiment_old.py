@@ -1,3 +1,10 @@
+"""
+File: experiment.py
+Author: 李泽宇
+Date: 
+Description: Time series classification experiment
+"""
+
 import torch.distributed
 from model.model_AC import TSProject
 from model.loss import DetectionLoss
