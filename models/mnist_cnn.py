@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
-epochs = 5
+epochs = 10
+learning_rate = 0.001
 
 # 定义数据预处理，包括转换为Tensor并标准化
 transform = transforms.Compose([
@@ -102,7 +103,7 @@ model = Model().to(device)  # 实例化网络并移到 GPU
 criterion = nn.CrossEntropyLoss()
 
 # 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
-optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
 # 初始化列表以存储每个 epoch 的 loss 和 accuracy
 train_losses = []
@@ -131,7 +132,7 @@ for epoch in range(epochs):
     accuracy = running_corrects / total  # 计算准确率
     train_losses.append(running_loss / len(trainloader))  # 记录平均损失
     train_accuracies.append(accuracy)  # 记录准确率
-    print(f"[{epoch + 1}] loss: {running_loss / len(trainloader):.4f}, accuracy: {accuracy:.2f}")  # 打印平均损失和准确率
+    print(f"[{epoch + 1}/{epochs}] loss: {running_loss / len(trainloader):.4f}, accuracy: {100* accuracy:.2f}%")  # 打印平均损失和准确率
 print('Finished Training')  # 训练完成
 
 # 保存模型参数

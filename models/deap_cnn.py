@@ -5,7 +5,7 @@ Date: 2024-07-30
 Description: This script implements a convolutional neural network (CNN) for emotion classification using the DEAP EEG dataset.
 """
 
-
+import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
 epochs = 10
+learning_rate = 0.001
 
 # 加载数据集
 dataset_name = "deap"
@@ -56,9 +57,9 @@ valloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
 
 
 # 定义卷积神经网络模型
-class Net(nn.Module):
+class Model(nn.Module):
     def __init__(self):
-        super(Net, self).__init__()
+        super(Model, self).__init__()
         # 定义第一个卷积层，输入通道为14，输出通道为32，卷积核大小为3x3
         # 输入: [batch_size, 14, 256]
         # 输出: [batch_size, 32, 254]
@@ -110,14 +111,14 @@ class Net(nn.Module):
         x = self.fc2(x)  # 第二个全连接层
         return x
 
-net = Net().to(device)  # 实例化网络并移到 GPU
-# print(net)  # 打印网络结构
+model = Model().to(device)  # 实例化网络并移到 GPU
+# print(model)  # 打印网络结构
 
 # 定义损失函数为交叉熵损失
 criterion = nn.CrossEntropyLoss()
 
 # 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
-optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
 
 # 初始化列表以存储每个 epoch 的 loss 和 accuracy
@@ -134,11 +135,11 @@ for epoch in range(epochs):  # 训练10个epoch
         inputs, labels = inputs.to(device), labels.to(device)  # 将数据移到 GPU
 
         optimizer.zero_grad()  # 将梯度缓存清零
-        outputs = net(inputs)  # 前向传播
+        outputs = model(inputs)  # 前向传播
         loss = criterion(outputs, labels)  # 计算损失
         loss.backward()  # 反向传播计算梯度
         # 梯度剪裁, 以确保梯度的范数不会超过 max_norm. 可以防止梯度爆炸，使训练过程更加稳定
-        torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=1.0)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()  # 更新参数
         running_loss += loss.item()  # 累积损失
         
@@ -149,8 +150,20 @@ for epoch in range(epochs):  # 训练10个epoch
     accuracy = running_corrects / total  # 计算准确率
     train_losses.append(running_loss / len(trainloader))  # 记录平均损失
     train_accuracies.append(accuracy)  # 记录准确率
-    print(f"[{epoch + 1}] loss: {running_loss / len(trainloader):.4f}, accuracy: {accuracy:.2f}")  # 打印平均损失和准确率
+    print(f"[{epoch + 1}/{epochs}] loss: {running_loss / len(trainloader):.4f}, accuracy: {100* accuracy:.2f}%")  # 打印平均损失和准确率
 print('Finished Training')  # 训练完成
+
+# 确保文件夹存在
+if not os.path.exists('models_save'):
+    os.makedirs('models_save')
+# 保存模型参数和优化器状态
+savepoint = {
+    'epoch': epoch,
+    'model_state_dict': model.state_dict(),
+    'optimizer_state_dict': optimizer.state_dict(),
+    'loss': running_loss
+}
+torch.save(savepoint, 'deap_cnn_model_savepoint.pth')
 
 
 # 绘制训练损失和准确率图像
@@ -167,6 +180,13 @@ ax2.set_xlabel('Epochs')
 ax2.set_ylabel('Accuracy')
 ax2.set_title('Training Accuracy over Epochs')
 ax2.legend()
+
+# 确保文件夹存在
+if not os.path.exists('plot_save'):
+    os.makedirs('plot_save')
+# 保存图像
+plt.savefig('plot_save/deap_cnn_train_metrics.png')
+
 plt.tight_layout()  # 调整布局
 plt.show()
 
@@ -178,9 +198,9 @@ with torch.no_grad():  # 禁用梯度计算
         images, labels = data  # 获取输入数据和标签
         images, labels = images.to(device), labels.to(device)  # 将数据移到 GPU
 
-        outputs = net(images)  # 前向传播
+        outputs = model(images)  # 前向传播
         _, predicted = torch.max(outputs.data, 1)  # 获取预测结果
         total += labels.size(0)  # 更新总数
         correct += (predicted == labels).sum().item()  # 更新正确预测数
 
-print(f'Accuracy of the network on the test data: {correct / total:.2f}')  # 打印测试集上的准确率
+print(f'Accuracy of the modelwork on the test data: {correct / total:.2f}')  # 打印测试集上的准确率
