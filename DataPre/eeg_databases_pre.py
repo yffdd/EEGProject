@@ -5,7 +5,6 @@ Date: 2024-07-20
 Description: This script is used to preprocess the EEG data from different databases.
 """
 
-
 import os
 import sklearn as sk
 import torch
