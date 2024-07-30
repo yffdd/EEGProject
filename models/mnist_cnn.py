@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
-epochs = 2
+epochs = 5
 
 # 定义数据预处理，包括转换为Tensor并标准化
 transform = transforms.Compose([
@@ -128,10 +128,10 @@ for epoch in range(epochs):
         total += labels.size(0)  # 更新样本总数
         running_corrects += (predicted == labels).sum().item()  # 更新正确预测数
 
-    accuracy = 100 * running_corrects / total  # 计算准确率
+    accuracy = running_corrects / total  # 计算准确率
     train_losses.append(running_loss / len(trainloader))  # 记录平均损失
     train_accuracies.append(accuracy)  # 记录准确率
-    print(f"[{epoch + 1}] loss: {running_loss / len(trainloader):.4f}, accuracy: {accuracy:.2f}%")  # 打印平均损失和准确率
+    print(f"[{epoch + 1}] loss: {running_loss / len(trainloader):.4f}, accuracy: {accuracy:.2f}")  # 打印平均损失和准确率
 print('Finished Training')  # 训练完成
 
 # 保存模型参数
@@ -155,9 +155,8 @@ ax1.legend()
 # 绘制训练准确率
 ax2.plot(train_accuracies, label='Training Accuracy', color='tab:red')
 ax2.set_xlabel('Epochs')
-ax2.set_ylabel('Accuracy (%)')
+ax2.set_ylabel('Accuracy')
 ax2.set_title('Training Accuracy over Epochs')
-ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}%'))
 ax2.legend()
 plt.tight_layout()  # 调整布局
 plt.show()
@@ -175,4 +174,4 @@ with torch.no_grad():  # 禁用梯度计算
         total += labels.size(0)  # 更新总数
         correct += (predicted == labels).sum().item()  # 更新正确预测数
 
-print(f'Accuracy of the model on the 10000 test input: {100 * correct / total:.2f}%')  # 打印测试集上的准确率
+print(f'Accuracy of the model on the 10000 test input: {correct / total:.2f}')  # 打印测试集上的准确率

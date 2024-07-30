@@ -25,9 +25,8 @@ def plot_training_metrics(train_losses, train_accuracies, title_loss='Training L
     # 绘制训练准确率
     ax2.plot(train_accuracies, label='Training Accuracy', color='tab:red')
     ax2.set_xlabel('Epochs')
-    ax2.set_ylabel('Accuracy (%)')
+    ax2.set_ylabel('Accuracy')
     ax2.set_title(title_accuracy)
-    ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{int(x)}%'))
     ax2.legend()
     
     plt.tight_layout()  # 调整布局
