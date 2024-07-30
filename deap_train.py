@@ -1,15 +1,17 @@
 """
-File: mnist_cnn.py
+File: deap_eeg_emotion_classification.py
 Author: xiales
 Date: 2024-07-30
-Description: This script implements a convolutional neural network (CNN) for the MNIST dataset.
+Description: This script implements a convolutional neural network (CNN) for emotion classification using the DEAP EEG dataset.
 """
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torchvision
 import torchvision.transforms as transforms
+from torch.utils.data import DataLoader, TensorDataset
+import numpy as np
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 # 检查是否有可用的 GPU
@@ -17,19 +19,31 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
 epochs = 10
 
-# 定义数据预处理，包括转换为Tensor并标准化
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,), (0.3081,))
-])
+# 加载数据集
+dataset_name = "deap"
+databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"
+filename = databases_out_directory + dataset_name + ".npz"
+data = np.load(filename)
+X = data['X']  # 形状: (38400, 14, 256)
+y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
+print(f"X shape: {X.shape}")
+print(f"y shape: {y.shape}")
+print(f"y unique: {np.unique(y)}")
 
-# 下载并加载训练集，设定批量大小为64，打乱数据
-trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+# 将 NumPy 数组转换为 PyTorch 张量
+X = torch.tensor(X, dtype=torch.float32)
+y = torch.tensor(y, dtype=torch.long)
 
-# 下载并加载测试集，设定批量大小为64，不打乱数据
-testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
+# 使用 train_test_split 将数据集拆分为训练集和测试集和验证集
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.2, random_state=42)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.2, random_state=42)
+# 创建 TensorDataset 和 DataLoader
+train_dataset = TensorDataset(X_train, y_train)
+test_dataset = TensorDataset(X_test, y_test)
+val_dataset = TensorDataset(X_val, y_val)
+trainloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
+testloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+valloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
 
 # # 打印训练集的大小和形状
 # print(f'Training set size: {len(trainset)}')
@@ -39,45 +53,46 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 # train_labels = trainset.targets
 # print(f'Unique labels in training set: {train_labels.unique()}')
 
+
 # 定义卷积神经网络模型
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        # 定义第一个卷积层，输入通道为1，输出通道为32，卷积核大小为3x3
-        # 输入: [batch_size, 1, 28, 28]
-        # 输出: [batch_size, 32, 26, 26] (因为卷积核大小为3x3, 步幅为1, 无填充)
-        self.conv1 = nn.Conv2d(1, 32, 3, 1)
+        # 定义第一个卷积层，输入通道为14，输出通道为32，卷积核大小为3x3
+        # 输入: [batch_size, 14, 256]
+        # 输出: [batch_size, 32, 254]
+        self.conv1 = nn.Conv1d(14, 32, kernel_size=3, stride=1)
         
-        # 定义第一个最大池化层，池化窗口大小为2x2
-        # 输入: [batch_size, 32, 26, 26]
-        # 输出: [batch_size, 32, 13, 13] (因为池化窗口大小为2x2, 步幅为2)
-        self.pool1 = nn.MaxPool2d(2)
+        # 定义第一个最大池化层，池化窗口大小为2
+        # 输入: [batch_size, 32, 254]
+        # 输出: [batch_size, 32, 127]
+        self.pool1 = nn.MaxPool1d(2)
         
         # 定义第二个卷积层，输入通道为32，输出通道为64，卷积核大小为3x3
-        # 输入: [batch_size, 32, 13, 13]
-        # 输出: [batch_size, 64, 11, 11] (因为卷积核大小为3x3, 步幅为1, 无填充)
-        self.conv2 = nn.Conv2d(32, 64, 3, 1)
+        # 输入: [batch_size, 32, 127]
+        # 输出: [batch_size, 64, 125]
+        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, stride=1)
         
-        # 定义第二个最大池化层，池化窗口大小为2x2
-        # 输入: [batch_size, 64, 11, 11]
-        # 输出: [batch_size, 64, 5, 5] (因为池化窗口大小为2x2, 步幅为2)
-        self.pool2 = nn.MaxPool2d(2)
+        # 定义第二个最大池化层，池化窗口大小为2
+        # 输入: [batch_size, 64, 125]
+        # 输出: [batch_size, 64, 62]
+        self.pool2 = nn.MaxPool1d(2)
         
         # 定义 dropout 层，丢弃概率为0.25
-        self.dropout1 = nn.Dropout2d(0.25)
+        self.dropout1 = nn.Dropout(0.25)
         
-        # 定义第一个全连接层，将输入特征数 64*5*5 转换为128
-        # 输入: [batch_size, 64*5*5]
+        # 定义第一个全连接层，将输入特征数 64*62 转换为128
+        # 输入: [batch_size, 64*62]
         # 输出: [batch_size, 128]
-        self.fc1 = nn.Linear(64 * 5 * 5, 128)
+        self.fc1 = nn.Linear(64 * 62, 128)
         
         # 定义 dropout 层，丢弃概率为0.5
         self.dropout2 = nn.Dropout(0.5)
         
-        # 定义第二个全连接层，将输入特征数 128 转换为10（10个类别）
+        # 定义第二个全连接层，将输入特征数 128 转换为4（4个情绪类别）
         # 输入: [batch_size, 128]
-        # 输出: [batch_size, 10]
-        self.fc2 = nn.Linear(128, 10)
+        # 输出: [batch_size, 4]
+        self.fc2 = nn.Linear(128, 4)
 
     def forward(self, x):
         x = self.conv1(x)  # 第一个卷积层
@@ -102,6 +117,7 @@ criterion = nn.CrossEntropyLoss()
 
 # 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
 optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9)
+
 
 # 初始化列表以存储每个 epoch 的 loss 和 accuracy
 train_losses = []
@@ -132,6 +148,7 @@ for epoch in range(epochs):  # 训练10个epoch
     train_accuracies.append(accuracy)  # 记录准确率
     print(f"[{epoch + 1}] loss: {running_loss / len(trainloader):.4f}, accuracy: {accuracy:.2f}%")  # 打印平均损失和准确率
 print('Finished Training')  # 训练完成
+
 
 # 绘制训练损失和准确率图像
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
@@ -164,4 +181,4 @@ with torch.no_grad():  # 禁用梯度计算
         total += labels.size(0)  # 更新总数
         correct += (predicted == labels).sum().item()  # 更新正确预测数
 
-print(f'Accuracy of the network on the 10000 test images: {100 * correct / total:.2f}%')  # 打印测试集上的准确率
+print(f'Accuracy of the network on the test data: {100 * correct / total:.2f}%')  # 打印测试集上的准确率

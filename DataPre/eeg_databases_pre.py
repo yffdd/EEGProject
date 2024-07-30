@@ -1,3 +1,11 @@
+"""
+File: eeg_databases_pre.py
+Author: xiales
+Date: 2024-07-20
+Description: This script is used to preprocess the EEG data from different databases.
+"""
+
+
 import os
 import sklearn as sk
 import torch
@@ -565,6 +573,8 @@ def deap_dataset_load(filename):
     data = np.load(filename)
     # 展示数据集内容
     # print(data.files)
+    X = data['X']
+    y = data['y']
     X_train = data['X_train']
     X_val = data['X_val']
     X_test =data['X_test']
@@ -578,6 +588,10 @@ def deap_dataset_load(filename):
     P_val = data['P_val']
     P_test = data['P_test']
     print("Loading complete")
+
+    # print(f"X shape: {X.shape}")
+    # print(f"y shape: {y.shape}")
+    # print(f"y unique: {np.unique(y)}")
 
 if __name__ == "__main__":
     
