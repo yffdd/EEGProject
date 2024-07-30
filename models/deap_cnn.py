@@ -163,7 +163,7 @@ savepoint = {
     'optimizer_state_dict': optimizer.state_dict(),
     'loss': running_loss
 }
-torch.save(savepoint, 'deap_cnn_model_savepoint.pth')
+torch.save(savepoint, 'models_save/deap_cnn_model_savepoint.pth')
 
 
 # 绘制训练损失和准确率图像
