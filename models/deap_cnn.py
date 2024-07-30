@@ -20,6 +20,7 @@ import csv
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
 epochs = 2000
+batch_size = 128
 learning_rate = 0.001
 
 # 加载数据集
@@ -44,9 +45,9 @@ X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.2, r
 train_dataset = TensorDataset(X_train, y_train)
 test_dataset = TensorDataset(X_test, y_test)
 val_dataset = TensorDataset(X_val, y_val)
-trainloader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-testloader = DataLoader(test_dataset, batch_size=64, shuffle=False)
-valloader = DataLoader(val_dataset, batch_size=64, shuffle=False)
+trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+valloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # # 打印训练集的大小和形状
 # print(f'Training set size: {len(trainset)}')
