@@ -19,6 +19,7 @@ import tensorflow as tf
 Dropout层：以0.1的概率对全连接层1进行Dropout操作。
 全连接层2：输出层，包含7个神经元，使用softmax激活函数，用于进行心电异常的分类预测。
 '''
+
 def CNN1d(input_ecg):
     layer1 = tf.keras.layers.Conv1D(filters=128, kernel_size=50, strides=3, padding='same', activation=tf.nn.relu)(
         input_ecg)

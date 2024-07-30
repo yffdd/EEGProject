@@ -209,7 +209,6 @@ class Experiment():
         val_DataLoader = DataLoader(val_dataset, sampler=val_sampler, drop_last=False, **self.Config['DataLoader'], collate_fn=collate_fn)
         return train_DataLoader, val_DataLoader
 
-
     def start(self):
         self.logger('---------------- Experiment start ----------------')
         train_DataLoader, val_DataLoader = self.expReady()
