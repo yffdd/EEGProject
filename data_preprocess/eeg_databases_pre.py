@@ -21,11 +21,11 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 
-### For preprocessing
+# For preprocessing
 deap_config = {
     "dataset_name": "deap",
-    "databases_root_directory": r"E:/Databases/RawData/DEAP/data_preprocessed_python",
-    "databases_out_directory": r"E:/Databases/OutData/DEAP/ACSE/",
+    "databases_root_directory": r"/bigdisk/322xcq/Databases/RawData/DEAP/data_preprocessed_python",
+    "databases_out_directory": r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/",
     "sampling_rate": 128,
     "resampling_rate": 128,
     "channel_names": ['FP1', 'AF3', 'F3', 'F7', 'FC5', 'FC1', 'C3', 'T7', 'CP5', 'CP1', 'P3', 'P7', 'PO3', 'O1', 'OZ', 'PZ', 'FP2', 'AF4', 'FZ', 'F4', 'F8', 'FC6', 'FC2', 'CZ', 'C4', 'T8', 'CP6', 'CP2', 'P4', 'P8', 'PO4', 'O2'],

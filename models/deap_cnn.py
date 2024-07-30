@@ -17,15 +17,16 @@ import matplotlib.pyplot as plt
 import csv
 
 # 检查是否有可用的 GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
-epochs = 2000
+epochs = 100
 batch_size = 128
-learning_rate = 0.001
+learning_rate = 0.005
 
 # 加载数据集
 dataset_name = "deap"
-databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"
+# databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"
+databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"
 filename = databases_out_directory + dataset_name + ".npz"
 data = np.load(filename)
 X = data['X']  # 形状: (38400, 14, 256)
