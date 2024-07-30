@@ -1,9 +1,17 @@
+"""
+File: plot_tools.py
+Author: xiales
+Date: 2024-07-30
+Description: 
+"""
+
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
 
 
-def plot_training_metrics(train_losses, train_accuracies, title_loss='Training Loss over Epochs', title_accuracy='Training Accuracy over Epochs'):
+def plot_training_metrics(train_losses, train_accuracies, title_loss='Training Loss over Epochs', title_accuracy='Training Accuracy over Epochs', is_save=False, save_name="training_metrics"):
     """
     绘制训练损失和准确率图像。
 
@@ -29,6 +37,11 @@ def plot_training_metrics(train_losses, train_accuracies, title_loss='Training L
     ax2.set_title(title_accuracy)
     ax2.legend()
     
+    if is_save:
+        if not os.path.exists('plot_save'):
+            os.makedirs('plot_save')
+        plt.savefig('plot_save/' + save_name + ".png", dpi=300)
+
     plt.tight_layout()  # 调整布局
     plt.show()
 

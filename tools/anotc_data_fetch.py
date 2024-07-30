@@ -1,9 +1,8 @@
 """
-    author  :   xiales
-    function:   用于处理匿名科创地面站导出的.csv文件中的数据
-    abstract:   None
-    date:       2024.04.22
-
+File: anotc_data_fetch.py
+Author: xiales
+Date: 2024-04-22
+Description: 用于处理匿名科创地面站导出的.csv文件中的数据
 """
 
 import os

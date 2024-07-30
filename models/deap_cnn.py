@@ -14,11 +14,12 @@ from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import csv
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
-epochs = 10
+epochs = 2000
 learning_rate = 0.001
 
 # 加载数据集
@@ -185,10 +186,20 @@ ax2.legend()
 if not os.path.exists('plot_save'):
     os.makedirs('plot_save')
 # 保存图像
-plt.savefig('plot_save/deap_cnn_train_metrics.png')
+plt.savefig("plot_save/deap_cnn_train_metrics" + ".png", dpi=300)
 
 plt.tight_layout()  # 调整布局
 plt.show()
+
+
+# 保存训练损失和准确率到 CSV 文件
+csv_filename = 'plot_save/deap_cnn_train_metrics.csv'  # 指定CSV文件的路径和名称
+with open(csv_filename, mode='w', newline='') as file:  # 打开文件以写入模式
+    writer = csv.writer(file)  # 创建一个csv写入对象
+    writer.writerow(['Epoch', 'Training Loss', 'Training Accuracy'])  # 写入表头
+    for epoch, (loss, accuracy) in enumerate(zip(train_losses, train_accuracies), start=1):  # 遍历每个epoch及其对应的损失和准确率
+        writer.writerow([epoch, loss, accuracy])  # 写入每个epoch的损失和准确率
+
 
 # 测试模型
 correct = 0  # 初始化正确预测数

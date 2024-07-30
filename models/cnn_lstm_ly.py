@@ -1,3 +1,10 @@
+""""
+File: cnn_lstm_ly.py
+Author: xiales
+Date: 2024-07-30
+Description: 由李颖的 Tensorflow 框架 CNN-LSTM 模型修改为 PyTorch 框架
+"""
+
 import os
 import numpy as np
 import torch

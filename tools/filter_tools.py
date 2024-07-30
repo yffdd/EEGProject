@@ -1,5 +1,11 @@
-from scipy.signal import butter, filtfilt, iirnotch
+"""
+File: filter_tools.py
+Author: xiales
+Date: 2024-07-30
+Description: 用于滤波的函数
+"""
 
+from scipy.signal import butter, filtfilt, iirnotch
 
 def apply_bandstop_filter(signal, lowcut, highcut, fs, order=2):
     """
