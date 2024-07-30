@@ -21,7 +21,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 
-### For preprocessing
+# For preprocessing
 deap_config = {
     "dataset_name": "deap",
     "databases_root_directory": r"E:/Databases/RawData/DEAP/data_preprocessed_python",
