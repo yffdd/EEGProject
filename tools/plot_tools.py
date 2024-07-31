@@ -9,7 +9,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Rectangle
-
+import csv
 
 def plot_training_metrics(train_losses, train_accuracies, title_loss='Training Loss over Epochs', title_accuracy='Training Accuracy over Epochs', is_save=False, save_name="training_metrics"):
     """
@@ -38,9 +38,16 @@ def plot_training_metrics(train_losses, train_accuracies, title_loss='Training L
     ax2.legend()
     
     if is_save:
+        # 保存图像
         if not os.path.exists('plot_save'):
             os.makedirs('plot_save')
         plt.savefig('plot_save/' + save_name + ".png", dpi=300)
+        # 保存训练损失和准确率到 CSV 文件
+        with open('plot_save/' + save_name + ".csv", mode='w', newline='') as file:  # 打开文件以写入模式
+            writer = csv.writer(file)  # 创建一个csv写入对象
+            writer.writerow(['Epoch', 'Training Loss', 'Training Accuracy'])  # 写入表头
+            for epoch, (loss, accuracy) in enumerate(zip(train_losses, train_accuracies), start=1):  # 遍历每个epoch及其对应的损失和准确率
+                writer.writerow([epoch, loss, accuracy])  # 写入每个epoch的损失和准确率
 
     plt.tight_layout()  # 调整布局
     plt.show()
