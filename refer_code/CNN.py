@@ -1,7 +1,7 @@
 """
 File: CNN.py
 Author: 李颖
-Date: 
+Date: 2024-07-01
 Description: TensorFlow实现卷积神经网络
 """
 

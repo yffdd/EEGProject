@@ -33,17 +33,33 @@ train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch(batch
 
 
 # 定义模型
-model = cnn_model.CnnC2F2(in_channels=14, num_classes=4).to(device)
-model_name = 'CnnC2F2'
+model = cnn_model.CnnC6F2(in_channels=14, num_classes=4).to(device)
+model_name = 'CnnC6F2'
 # print(model)  # 打印网络结构
+# 定义优化器为 Adam
+optimizer = optim.Adam(
+    model.parameters(),                # 需要优化的模型参数
+    lr=learning_rate,                  # 学习率
+    betas=(0.9, 0.999),                # beta_1 和 beta_2
+    eps=1e-7,                          # 防止除零错误的平滑项，默认值是 1e-8
+    weight_decay=0                     # 权重衰减，通常用于 L2 正则化，默认值是 0
+)
 # 定义损失函数为交叉熵损失
 criterion = nn.CrossEntropyLoss()
-# 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
+
+
+# # 定义模型
+# model = cnn_model.CnnC2F2(in_channels=14, num_classes=4).to(device)
+# model_name = 'CnnC2F2'
+# # print(model)  # 打印网络结构
+# # 定义损失函数为交叉熵损失
+# criterion = nn.CrossEntropyLoss()
+# # 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
+# optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
 
 
 # 加载保存点
-savepoint = torch.load('models_save/CnnC2F2_model_savepoint.pth')
+savepoint = torch.load("models_save/" + model_name + "_model_savepoint.pth")
 model.load_state_dict(savepoint['model_state_dict'])
 optimizer.load_state_dict(savepoint['optimizer_state_dict'])
 start_epoch = savepoint['epoch'] + 1

@@ -83,6 +83,8 @@ class CnnC2F2(nn.Module):
 
 class CnnC6F2(nn.Module):
     """
+    Reference: CNN.py -- Li Yin
+
     input: (batch_size, num_features, sequence_length)
     output: (batch_size, num_classes)
 
@@ -176,3 +178,123 @@ class CnnC6F2(nn.Module):
 
 
 
+class CNN_LSTM(nn.Module):
+    """
+    Reference: Peng Junwen
+
+    input: (batch_size, num_features, sequence_length)
+    output: (batch_size, num_classes)
+    
+    # 定义模型
+    model = cnn_model.CNN_LSTM(in_channels=in_channels, num_classes=num_classes).to(device)
+    # 定义优化器为 Adam
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999))
+    # 定义损失函数
+    criterion = nn.BCELoss()
+
+    """
+
+
+    def __init__(self, input_channels=14, hidden_size=256, num_layers=3, num_classes=4):
+        super(CNN_LSTM, self).__init__()
+        self.input_channels = input_channels
+        self.hidden_size = hidden_size
+        self.num_layers = num_layers
+
+        # CNN layers
+        self.cnn_layers = nn.Sequential(
+            nn.Conv1d(input_channels, 64, kernel_size=5, stride=1, padding=2),
+            nn.BatchNorm1d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(kernel_size=1, stride=1),
+            nn.Conv1d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(128),
+            nn.ReLU(inplace=True),
+            nn.Conv1d(128, 256, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(kernel_size=1, stride=1),
+        )
+
+        # LSTM layers
+        self.lstm = nn.LSTM(input_size=256, hidden_size=hidden_size, num_layers=num_layers, batch_first=True,
+                            dropout=0.5)
+
+        # Fully connected layers
+        self.fc = nn.Sequential(
+            nn.Linear(hidden_size, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, num_classes)
+        )
+
+        # Activation function
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        # 输入 x 的形状为 [batch_size, features]
+
+        # # 添加时间步维度，将形状变为 [batch_size, 1, features]
+        # x = x.unsqueeze(1)
+
+        # # 转置为 [batch_size, features, 1]，以匹配Conv1d的输入要求
+        # x = x.transpose(1, 2)
+
+        # CNN feature extraction
+        x = self.cnn_layers(x)
+
+        # 为LSTM准备输入 (batch_size, seq_len, features)
+        x = x.transpose(1, 2)  # 从 [batch_size, features, time] 变为 [batch_size, time, features]
+
+        # LSTM layers
+        h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).requires_grad_().to(x.device)
+        c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size).requires_grad_().to(x.device)
+        out, _ = self.lstm(x, (h0, c0))
+
+        # 我们取最后一个时间步的输出
+        out = out[:, -1, :]
+
+        # Fully connected layers
+        out = self.fc(out)
+
+        # # Activation
+        # out = self.sigmoid(out)
+
+        return out
+
+
+
+class CNNECG(nn.Module):
+    def __init__(self):
+        super(CNNECG, self).__init__()
+        self.features = nn.Sequential(
+            nn.Conv1d(14, 64, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(64),
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(kernel_size=2, stride=2),
+            nn.Conv1d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(kernel_size=2, stride=2),
+            nn.Conv1d(128, 256, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True),
+            nn.MaxPool1d(kernel_size=2, stride=2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(8192, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(),
+            nn.Linear(512, 256),
+            nn.ReLU(inplace=True),
+            nn.Linear(256, 4),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        # x = x.unsqueeze(1)  # 添加通道维度
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
