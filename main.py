@@ -17,7 +17,7 @@ import csv
 from tqdm import tqdm, tgrange
 
 # 自定义模块
-from models import cnn_model
+from models import cnn_models
 from tools import data_fetch_tools
 from tools import plot_tools
 
@@ -41,7 +41,7 @@ print("model initialization...")
 
 
 # 定义模型
-model = cnn_model.CnnC6F2(in_channels=14, num_classes=3).to(device)
+model = cnn_models.CnnC6F2(in_channels=14, num_classes=3).to(device)
 model_name = model.module_name
 # print(model)  # 打印网络结构
 # 定义优化器为 Adam

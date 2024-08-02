@@ -22,19 +22,19 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
     print("fetch DEAP dataset...")
     # 加载数据集
     # dataset_name = "deap"
-    dataset_name = "deap_class3"
-    # databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
-    databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
-    filename = databases_out_directory + dataset_name + ".npz"
-    data = np.load(filename)
-    X = data['X']  # 形状: (38400, 14, 256)
-    y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
-    # 将 NumPy 数组转换为 PyTorch 张量
-    X = torch.tensor(X, dtype=torch.float64)
-    y = torch.tensor(y, dtype=torch.long)
+    # dataset_name = "deap_class3"
+    # # databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
+    # databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
+    # filename = databases_out_directory + dataset_name + ".npz"
+    # data = np.load(filename)
+    # X = data['X']  # 形状: (38400, 14, 256)
+    # y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
+    # # 将 NumPy 数组转换为 PyTorch 张量
+    # X = torch.tensor(X, dtype=torch.float64)
+    # y = torch.tensor(y, dtype=torch.long)
 
-    # X = torch.rand(38400, 14, 256)  # 生成随机数据
-    # y = torch.randint(0, 4, (38400,))  # 生成随机标签
+    X = torch.rand(38400, 14, 256)  # 生成随机数据
+    y = torch.randint(0, 4, (38400,))  # 生成随机标签
 
 
     # 打印数据形状和标签类型
@@ -68,4 +68,17 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
 
 if __name__ == '__main__':
     train_loader, test_loader, val_loader = deap_loader_fetch()
+
+    # 获取一个批次的数据
+    data_iter = iter(train_loader)
+    inputs, labels = next(data_iter)
+    # 查看输入数据的形状
+    print(f"Input shape: {inputs.shape}")
+    # 查看标签的形状
+    print(f"Labels shape: {labels.shape}")
+
+    print(f"Input shape[0]: {inputs.shape[0]}")
+    print(f"Input shape[1]: {inputs.shape[1]}")
+    print(f"Input shape[2]: {inputs.shape[2]}")
+    print(f"labels uqique: {len(labels.unique())}")
 

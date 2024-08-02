@@ -15,7 +15,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 
 # For preprocessing
-dataset_name = "deap_class3"
+dataset_name = "deap_class4"
 databases_root_directory = r"/bigdisk/322xcq/Databases/RawData/DEAP/data_preprocessed_python"
 databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"
 baseline_removal_window = 3
@@ -25,7 +25,7 @@ downsampling_rate = 128
 channels_to_use = ['AF3', 'F7', 'F3', 'FC5', 'T7', 'P7', 'O1', 'O2', 'P8', 'T8', 'FC6', 'F4', 'F8', 'AF4']
 window_size = 2
 window_overlap = 0
-convert_labels_to_nnp = True
+convert_labels_to_nnp = False
 save_plots_to_file = True
 
 sampling_rate = 128
