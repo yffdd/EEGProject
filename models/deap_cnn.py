@@ -17,15 +17,17 @@ import matplotlib.pyplot as plt
 import csv
 
 # 检查是否有可用的 GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print(f'Using device: {device}')
-epochs = 2000
+epochs = 200
 batch_size = 128
-learning_rate = 0.001
+learning_rate = 0.005
+model_name = "deap_cnn"
 
 # 加载数据集
 dataset_name = "deap"
-databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"
+# databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"
+databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"
 filename = databases_out_directory + dataset_name + ".npz"
 data = np.load(filename)
 X = data['X']  # 形状: (38400, 14, 256)
@@ -45,9 +47,9 @@ X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.2, r
 train_dataset = TensorDataset(X_train, y_train)
 test_dataset = TensorDataset(X_test, y_test)
 val_dataset = TensorDataset(X_val, y_val)
-trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-testloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-valloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # # 打印训练集的大小和形状
 # print(f'Training set size: {len(trainset)}')
@@ -132,7 +134,7 @@ for epoch in range(epochs):  # 训练10个epoch
     running_loss = 0.0  # 初始化损失值
     running_corrects = 0  # 初始化正确预测数
     total = 0  # 初始化总数
-    for i, data in enumerate(trainloader, 0):  # 遍历训练数据集
+    for i, data in enumerate(train_loader, 0):  # 遍历训练数据集
         inputs, labels = data  # 获取输入数据和标签
         inputs, labels = inputs.to(device), labels.to(device)  # 将数据移到 GPU
 
@@ -150,22 +152,26 @@ for epoch in range(epochs):  # 训练10个epoch
         running_corrects += (predicted == labels).sum().item()  # 更新正确预测数
 
     accuracy = running_corrects / total  # 计算准确率
-    train_losses.append(running_loss / len(trainloader))  # 记录平均损失
+    train_losses.append(running_loss / len(train_loader))  # 记录平均损失
     train_accuracies.append(accuracy)  # 记录准确率
-    print(f"[{epoch + 1}/{epochs}] loss: {running_loss / len(trainloader):.4f}, accuracy: {100* accuracy:.2f}%")  # 打印平均损失和准确率
+    print(f"[{epoch + 1}/{epochs}] loss: {running_loss / len(train_loader):.4f}, accuracy: {100* accuracy:.2f}%")  # 打印平均损失和准确率
 print('Finished Training')  # 训练完成
 
 # 确保文件夹存在
 if not os.path.exists('models_save'):
     os.makedirs('models_save')
-# 保存模型参数和优化器状态
-savepoint = {
+# 保存模型状态
+checkpoint = {
     'epoch': epoch,
     'model_state_dict': model.state_dict(),
     'optimizer_state_dict': optimizer.state_dict(),
-    'loss': running_loss
+    'loss': running_loss,
+    'learning_rate': learning_rate,
+    'batch_size': batch_size,
+    'train_losses': train_losses,
+    'train_accuracies': train_accuracies,
 }
-torch.save(savepoint, 'models_save/deap_cnn_model_savepoint.pth')
+torch.save(checkpoint, "models_save/" + model_name + "_model_checkpoint.pth")
 
 
 # 绘制训练损失和准确率图像
@@ -206,7 +212,7 @@ with open(csv_filename, mode='w', newline='') as file:  # 打开文件以写入�
 correct = 0  # 初始化正确预测数
 total = 0  # 初始化总数
 with torch.no_grad():  # 禁用梯度计算
-    for data in testloader:  # 遍历测试数据集
+    for data in test_loader:  # 遍历测试数据集
         images, labels = data  # 获取输入数据和标签
         images, labels = images.to(device), labels.to(device)  # 将数据移到 GPU
 
@@ -215,4 +221,4 @@ with torch.no_grad():  # 禁用梯度计算
         total += labels.size(0)  # 更新总数
         correct += (predicted == labels).sum().item()  # 更新正确预测数
 
-print(f'Accuracy of the modelwork on the test data: {correct / total:.2f}')  # 打印测试集上的准确率
+print(f'Accuracy of the modelwork on the test data: {100* correct / total:.2f}%')  # 打印测试集上的准确率
