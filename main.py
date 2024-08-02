@@ -21,12 +21,11 @@ from models import cnn_models
 from tools import data_fetch_tools, plot_tools, train_tools
 
 
-
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'using device: {device}')
 epochs = 100
-batch_size = 64
+batch_size = 128
 learning_rate = 0.001
 
 
@@ -38,7 +37,7 @@ train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch(batch
 print("model initialization...")
 data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
 inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
-model = cnn_models.AdversarialCNN_DeepConvNet(
+model = cnn_models.CnnC6F2(
     batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
     num_channels=inputs.shape[1],           # Set the number of channels from the input shape
     num_samples=inputs.shape[2],            # Set the number of samples from the input shape
@@ -52,11 +51,11 @@ print("model initialization complete")
 
 
 # 训练模型
-checkpoint = train_tools.training_model(model=model, train_loader=train_loader, device=device, epochs=epochs)
+checkpoint = train_tools.training_model(model=model, train_loader=train_loader, device=device, epochs=epochs, clip_grad=False)
 
 # 绘制准确率与损失函数图像
 plot_tools.plot_training_metrics(train_losses=checkpoint["train_losses"], train_accuracies=checkpoint["train_accuracies"], is_save=True, save_name=model.model_name + "_training_metrics")
 
 # 测试模型
-train_tools.test_model(model=model, train_loader=train_loader, device=device)
+train_tools.test_model(checkpoint=checkpoint, model=model, test_loader=test_loader, device=device)
 

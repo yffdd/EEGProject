@@ -7,8 +7,13 @@ Description: 用于不同训练方式的脚本函数
 """
 
 
+
+import sys
+sys.path.append("/bigdisk/322xcq/Project/02.EEG_Project/EEGProject")
 import os
 import torch
+from models import cnn_models
+from tools import data_fetch_tools, plot_tools
 
 
 def training_model(model, train_loader, device, epochs=100, clip_grad=False, save_model=True):
@@ -80,25 +85,30 @@ def training_model(model, train_loader, device, epochs=100, clip_grad=False, sav
         save_model_path = "models_save/" + model.model_name + "_model_checkpoint.pth"
         try:
             torch.save(checkpoint, save_model_path)
-            print(f"Model saved to: {save_model_path}")
+            print(f"model saved to: {save_model_path}")
         except Exception as e:
             print(f"Error saving model: {e}")
-        print(f"save model to: {save_model_path}")
+        
 
     return checkpoint
 
-def test_model(model, test_loader, device):
+
+def test_model(checkpoint, model, test_loader, device):
     """
     测试模型在测试数据集上的准确率。
 
     参数:
     - model (nn.Module): 要测试的模型。
     - test_loader (DataLoader): 测试数据加载器。
-    - device (torch.device): 模型和数据所在的设备（CPU 或 GPU）。
+    - device (torch.device): 模型和数据所在的设备(CPU 或 GPU)。
 
     返回:
     - None
     """
+    # 将模型的状态从 checkpoint 加载到模型中
+    # checkpoint = torch.load("models_save/" + model.model_name + "_model_checkpoint.pth")
+    model.load_state_dict(checkpoint['model_state_dict'])
+
     correct = 0  # 初始化正确预测数
     total = 0  # 初始化总数
     model.eval()  # 设置模型为评估模式（禁用 dropout 和 batch normalization）
@@ -120,5 +130,37 @@ def test_model(model, test_loader, device):
         print('The test dataset is empty and accuracy cannot be calculated')
 
 
+if __name__  == '__main__':
 
+
+    # 检查是否有可用的 GPU
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print(f'using device: {device}')
+    epochs = 100
+    batch_size = 128
+    learning_rate = 0.001
+
+
+    # 数据提取
+    train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch(batch_size=batch_size)
+
+    # Initialize the model
+    print("model initialization...")
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = cnn_models.CnnC6F2(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
+    )
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
+    print("model initialization complete")
+
+    # 测试模型
+    checkpoint = torch.load("models_save/" + model.model_name + "_model_checkpoint.pth")
+    test_model(checkpoint=checkpoint, model=model, test_loader=test_loader, device=device)
 
