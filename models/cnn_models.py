@@ -1,5 +1,5 @@
 """"
-File: cnn_model.py
+File: cnn_models.py
 Author: xiales
 Date: 2024-07-31
 Description: CNN 模型
@@ -17,7 +17,7 @@ class CnnC2F2(nn.Module):
     output: (batch_size, num_classes)
 
     # 定义模型
-    model = cnn_model.CnnC2F2(in_channels=14, num_classes=4).to(device)
+    model = cnn_models.CnnC2F2(in_channels=14, num_classes=4).to(device)
     model_name = model.module_name
     # 定义损失函数为交叉熵损失
     criterion = torch.nn.CrossEntropyLoss()
@@ -90,7 +90,7 @@ class CnnC6F2(nn.Module):
     output: (batch_size, num_classes)
 
     # 定义模型
-    model = cnn_model.CNN(in_channels=in_channels, num_classes=num_classes).to(device)
+    model = cnn_models.CNN(in_channels=in_channels, num_classes=num_classes).to(device)
     model_name = model.module_name
     # 定义优化器为 Adam
     optimizer = torch.optim.Adam(
@@ -188,8 +188,17 @@ class CNN_LSTM(nn.Module):
     input: (batch_size, num_features, sequence_length)
     output: (batch_size, num_classes)
     
+
+    Example Usage:
+    # Initialize the model
+    model = cnn_models.AdversarialCNN(in_channels=14, num_classes=4, sequence_length=256, learning_rate=0.001)
+    model.to(device)
+    model_name = model.module_name
+    optimizer = model.optimizer
+    criterion = model.criterion
+
     # 定义模型
-    model = cnn_model.CNN_LSTM(in_channels=in_channels, num_classes=num_classes).to(device)
+    model = cnn_models.CNN_LSTM(in_channels=in_channels, num_classes=num_classes).to(device)
     model_name = model.module_name
     # 定义优化器为 Adam
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999))
@@ -198,17 +207,16 @@ class CNN_LSTM(nn.Module):
 
     """
 
-
-    def __init__(self, input_channels=14, hidden_size=256, num_layers=3, num_classes=4):
+    def __init__(self, in_channels=14, num_classes=4, hidden_size=256, num_layers=3, sequence_length=256, learning_rate=0.001, model_name='CNNECG'):
         super(CNN_LSTM, self).__init__()
         self.module_name = "CNN_LSTM"
-        self.input_channels = input_channels
+        self.input_channels = in_channels
         self.hidden_size = hidden_size
         self.num_layers = num_layers
 
         # CNN layers
         self.cnn_layers = nn.Sequential(
-            nn.Conv1d(input_channels, 64, kernel_size=5, stride=1, padding=2),
+            nn.Conv1d(self.input_channels, 64, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm1d(64),
             nn.ReLU(inplace=True),
             nn.MaxPool1d(kernel_size=1, stride=1),
@@ -235,6 +243,12 @@ class CNN_LSTM(nn.Module):
 
         # Activation function
         self.sigmoid = nn.Sigmoid()
+
+        # Initialize optimizer and loss function
+        self.module_name = model_name
+        self.learning_rate = learning_rate
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate, betas=(0.9, 0.999))
+        self.criterion = torch.nn.CrossEntropyLoss()
 
     def forward(self, x):
         # 输入 x 的形状为 [batch_size, features]
@@ -270,9 +284,23 @@ class CNN_LSTM(nn.Module):
 
 
 class CNNECG(nn.Module):
-    def __init__(self):
+    """
+    Reference: Peng Junwen
+
+    input: (batch_size, num_features, sequence_length)
+    output: (batch_size, num_classes)
+
+    Example Usage:
+    # Initialize the model
+    model = cnn_models.CNNECG(in_channels=14, num_classes=4, sequence_length=256, learning_rate=0.001)
+    model.to(device)
+    model_name = model.module_name
+    optimizer = model.optimizer
+    criterion = model.criterion
+
+    """
+    def __init__(self, in_channels=14, num_classes=4, sequence_length=256, learning_rate=0.001, model_name='CNNECG'):
         super(CNNECG, self).__init__()
-        self.module_name = "CNNECG"
         self.features = nn.Sequential(
             nn.Conv1d(14, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm1d(64),
@@ -298,6 +326,12 @@ class CNNECG(nn.Module):
             nn.Sigmoid()
         )
 
+        # Initialize optimizer and loss function
+        self.module_name = model_name
+        self.learning_rate = learning_rate
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, betas=(0.9, 0.999))
+        self.criterion = torch.nn.CrossEntropyLoss()
+
     def forward(self, x):
         # x = x.unsqueeze(1)  # 添加通道维度
         x = self.features(x)
@@ -307,24 +341,26 @@ class CNNECG(nn.Module):
     
 
 
-class AdversarialCNN(nn.Module):
+class AdversarialCNN_DeepConvNet(nn.Module):
     """
     Ref: https://github.com/philipph77/acse-framework
     Paper: Exploiting Multiple EEG Data Domains with Adversarial Learning
 
-    # 定义模型
-    model = cnn_model.AdversarialCNN(in_channels=14, num_classes=4, samples=128)
+    input: (batch_size, num_features, sequence_length)
+    output: (batch_size, num_classes)
+
+    Example Usage:
+    # Initialize the model
+    model = cnn_models.AdversarialCNN_DeepConvNet(in_channels=14, num_classes=4, sequence_length=256, learning_rate=0.001)
+    model.to(device)
     model_name = model.module_name
-    # 定义优化器为 Adam
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-    # 定义损失函数为交叉熵损失
-    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = model.optimizer
+    criterion = model.criterion
 
     """
 
-    def __init__(self, in_channels=14, num_classes=4, samples=256, model_name='DeepConvNet'):
-        super(AdversarialCNN, self).__init__()
-        self.module_name = model_name
+    def __init__(self, in_channels=14, num_classes=4, sequence_length=256, learning_rate=0.001, model_name='AdversarialCNN_DeepConvNet'):
+        super(AdversarialCNN_DeepConvNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 25, (1, 5), padding=(0, 2))
         self.conv2 = nn.Conv2d(25, 25, (in_channels, 1), padding=0, bias=False)  # 对于 (chans, 1) 的卷积核不需要padding
         self.bn1 = nn.BatchNorm2d(25, eps=1e-05, momentum=0.1)
@@ -341,10 +377,16 @@ class AdversarialCNN(nn.Module):
         self.conv5 = nn.Conv2d(100, 200, (1, 5), padding=(0, 2), bias=False)
         self.bn4 = nn.BatchNorm2d(200, eps=1e-05, momentum=0.1)
         
-        self.fc = nn.Linear(200 * ((samples // 16)), num_classes)
+        self.fc = nn.Linear(200 * ((sequence_length // 16)), num_classes)
+
+        # Initialize optimizer and loss function
+        self.module_name = model_name
+        self.learning_rate = learning_rate
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=1e-4)
+        self.criterion = torch.nn.CrossEntropyLoss()
 
     def forward(self, x):
-        x = x.unsqueeze(1)  # 添加一个通道维度，使形状变为 (38400, 1, 14, 256)
+        x = x.unsqueeze(1)  # 添加一个通道维度，使形状变为 (batch_size, 1, num_features, sequence_length)
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.bn1(x)

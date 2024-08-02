@@ -26,10 +26,10 @@ default_type = torch.float64
 torch.set_default_dtype(default_type)
 
 # 检查是否有可用的 GPU
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:4" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
 print(f'Using device: {device}')
-epochs = 200
+epochs = 100
 batch_size = 64
 learning_rate = 0.001
 
@@ -40,20 +40,20 @@ train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch(batch
 print("model initialization...")
 
 
-# # 定义模型
-# model = cnn_model.CnnC6F2(in_channels=14, num_classes=4).to(device)
-# model_name = model.module_name
-# # print(model)  # 打印网络结构
-# # 定义优化器为 Adam
-# optimizer = torch.optim.Adam(
-#     model.parameters(),                # 需要优化的模型参数
-#     lr=learning_rate,                  # 学习率
-#     betas=(0.9, 0.999),                # beta_1 和 beta_2
-#     eps=1e-7,                          # 防止除零错误的平滑项，默认值是 1e-8
-#     weight_decay=0                     # 权重衰减，通常用于 L2 正则化，默认值是 0
-# )
-# # 定义损失函数为交叉熵损失
-# criterion = torch.nn.CrossEntropyLoss()
+# 定义模型
+model = cnn_model.CnnC6F2(in_channels=14, num_classes=3).to(device)
+model_name = model.module_name
+# print(model)  # 打印网络结构
+# 定义优化器为 Adam
+optimizer = torch.optim.Adam(
+    model.parameters(),                # 需要优化的模型参数
+    lr=learning_rate,                  # 学习率
+    betas=(0.9, 0.999),                # beta_1 和 beta_2
+    eps=1e-7,                          # 防止除零错误的平滑项，默认值是 1e-8
+    weight_decay=0                     # 权重衰减，通常用于 L2 正则化，默认值是 0
+)
+# 定义损失函数为交叉熵损失
+criterion = torch.nn.CrossEntropyLoss()
 
 
 # # 定义模型
@@ -75,13 +75,13 @@ print("model initialization...")
 # criterion = torch.nn.CrossEntropyLoss()
 
 
-# 定义模型
-model = cnn_model.AdversarialCNN().to(device)
-model_name = model.module_name
-# 定义优化器为 Adam
-optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
-# 定义损失函数为交叉熵损失
-criterion = torch.nn.CrossEntropyLoss()
+# # Initialize the model
+# model = cnn_model.AdversarialCNN_DeepConvNet(in_channels=14, num_classes=3, sequence_length=256, learning_rate=0.001)
+# model.to(device)
+# model_name = model.module_name
+# optimizer = model.optimizer
+# criterion = model.criterion
+
 
 
 print("model initialization complete")
@@ -98,7 +98,7 @@ for epoch in range(1, epochs+1):
     total = 0  # 初始化总数
     for i, data in enumerate(train_loader, 0):  # 遍历训练数据集
         inputs, labels = data  # 获取输入数据和标签
-        inputs, labels = inputs.to(device), labels.to(device)  # 将数据移到 GPU
+        inputs, labels = inputs.to(device), labels.to(device)  # 将数据移到 GPU 或 CPI
 
         optimizer.zero_grad()  # 将梯度缓存清零
         outputs = model(inputs)  # 前向传播

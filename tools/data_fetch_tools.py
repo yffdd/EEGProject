@@ -21,7 +21,8 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
     """
     print("fetch DEAP dataset...")
     # 加载数据集
-    dataset_name = "deap"
+    # dataset_name = "deap"
+    dataset_name = "deap_class3"
     # databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
     databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
     filename = databases_out_directory + dataset_name + ".npz"
@@ -36,10 +37,10 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
     # y = torch.randint(0, 4, (38400,))  # 生成随机标签
 
 
-    # # 打印数据形状和标签类型
-    # print(f"X shape: {X.shape}")
-    # print(f"y shape: {y.shape}")
-    # print(f"y unique: {np.unique(y)}")
+    # 打印数据形状和标签类型
+    print(f"X shape: {X.shape}")
+    print(f"y shape: {y.shape}")
+    print(f"y unique: {np.unique(y)}")
     # 使用 train_test_split 将数据集拆分为训练集和测试集和验证集
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=test_size, random_state=random_state)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=test_size, random_state=random_state)
@@ -67,3 +68,4 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
 
 if __name__ == '__main__':
     train_loader, test_loader, val_loader = deap_loader_fetch()
+
