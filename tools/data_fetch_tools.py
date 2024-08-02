@@ -15,26 +15,26 @@ from sklearn.model_selection import train_test_split
 
 
 
-def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=False):
+def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=False, default_type=torch.float32):
     """
     加载DEAP数据集, 并返回训练集和测试集以及验证集
     """
     print("fetch DEAP dataset...")
     # 加载数据集
     # dataset_name = "deap"
-    dataset_name = "deap_class3"
+    # dataset_name = "deap_class3"
     # databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
-    databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
-    filename = databases_out_directory + dataset_name + ".npz"
-    data = np.load(filename)
-    X = data['X']  # 形状: (38400, 14, 256)
-    y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
-    # 将 NumPy 数组转换为 PyTorch 张量
-    X = torch.tensor(X, dtype=torch.float64)
-    y = torch.tensor(y, dtype=torch.long)
+    # # databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
+    # filename = databases_out_directory + dataset_name + ".npz"
+    # data = np.load(filename)
+    # X = data['X']  # 形状: (38400, 14, 256)
+    # y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
+    # # 将 NumPy 数组转换为 PyTorch 张量
+    # X = torch.tensor(X, dtype=default_type)
+    # y = torch.tensor(y, dtype=torch.long)
 
-    # X = torch.rand(38400, 14, 256)  # 生成随机数据
-    # y = torch.randint(0, 4, (38400,))  # 生成随机标签
+    X = torch.rand(38400, 14, 256)  # 生成随机数据
+    y = torch.randint(0, 4, (38400,))  # 生成随机标签
 
 
     # 打印数据形状和标签类型
@@ -61,7 +61,7 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
         train_labels = train_dataset.targets
         print(f'Unique labels in training set: {train_labels.unique()}')
 
-    print("fetch data done")
+    print("fetch data complete")
 
     return train_loader, test_loader, val_loader
 
