@@ -18,15 +18,16 @@ class CnnC2F2(nn.Module):
 
     # 定义模型
     model = cnn_model.CnnC2F2(in_channels=14, num_classes=4).to(device)
-    # print(model)  # 打印网络结构
+    model_name = model.module_name
     # 定义损失函数为交叉熵损失
-    criterion = nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss()
     # 定义优化器为随机梯度下降，学习率为0.01，动量为0.9
     optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=0.9)
     """
 
     def __init__(self, in_channels=14, num_classes=4):
         super(CnnC2F2, self).__init__()
+        self.module_name = "CnnC2F2"
         # 定义第一个卷积层，输入通道为14，输出通道为32，卷积核大小为3x3
         # 输入: [batch_size, 14, 256]
         # 输出: [batch_size, 32, 254]
@@ -90,8 +91,9 @@ class CnnC6F2(nn.Module):
 
     # 定义模型
     model = cnn_model.CNN(in_channels=in_channels, num_classes=num_classes).to(device)
+    model_name = model.module_name
     # 定义优化器为 Adam
-    optimizer = optim.Adam(
+    optimizer = torch.optim.Adam(
         model.parameters(),                # 需要优化的模型参数
         lr=learning_rate,                  # 学习率
         betas=(0.9, 0.999),                # beta_1 和 beta_2
@@ -99,10 +101,11 @@ class CnnC6F2(nn.Module):
         weight_decay=0                     # 权重衰减，通常用于 L2 正则化，默认值是 0
     )
     # 定义损失函数为交叉熵损失
-    criterion = nn.CrossEntropyLoss()
+    criterion = torch.nn.CrossEntropyLoss()
     """
     def __init__(self, in_channels=14, num_classes=4):
         super(CnnC6F2, self).__init__()
+        self.module_name = "CnnC6F2"
         # 要保持输出长度与输入长度相同，可以使用以下公式计算填充量：Padding= ((Kernel_Size-1) - (Stride-1)) / 2
         self.conv1 = nn.Conv1d(in_channels=in_channels, out_channels=128, kernel_size=50, stride=3, padding=24)  # Adjust padding
         self.bn1 = nn.BatchNorm1d(128)
@@ -187,8 +190,9 @@ class CNN_LSTM(nn.Module):
     
     # 定义模型
     model = cnn_model.CNN_LSTM(in_channels=in_channels, num_classes=num_classes).to(device)
+    model_name = model.module_name
     # 定义优化器为 Adam
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999))
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, betas=(0.9, 0.999))
     # 定义损失函数
     criterion = nn.BCELoss()
 
@@ -197,6 +201,7 @@ class CNN_LSTM(nn.Module):
 
     def __init__(self, input_channels=14, hidden_size=256, num_layers=3, num_classes=4):
         super(CNN_LSTM, self).__init__()
+        self.module_name = "CNN_LSTM"
         self.input_channels = input_channels
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -267,6 +272,7 @@ class CNN_LSTM(nn.Module):
 class CNNECG(nn.Module):
     def __init__(self):
         super(CNNECG, self).__init__()
+        self.module_name = "CNNECG"
         self.features = nn.Sequential(
             nn.Conv1d(14, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm1d(64),
@@ -298,3 +304,75 @@ class CNNECG(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+    
+
+
+class AdversarialCNN(nn.Module):
+    """
+    Ref: https://github.com/philipph77/acse-framework
+    Paper: Exploiting Multiple EEG Data Domains with Adversarial Learning
+
+    # 定义模型
+    model = cnn_model.AdversarialCNN(in_channels=14, num_classes=4, samples=128)
+    model_name = model.module_name
+    # 定义优化器为 Adam
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    # 定义损失函数为交叉熵损失
+    criterion = torch.nn.CrossEntropyLoss()
+
+    """
+
+    def __init__(self, in_channels=14, num_classes=4, samples=256, model_name='DeepConvNet'):
+        super(AdversarialCNN, self).__init__()
+        self.module_name = model_name
+        self.conv1 = nn.Conv2d(1, 25, (1, 5), padding=(0, 2))
+        self.conv2 = nn.Conv2d(25, 25, (in_channels, 1), padding=0, bias=False)  # 对于 (chans, 1) 的卷积核不需要padding
+        self.bn1 = nn.BatchNorm2d(25, eps=1e-05, momentum=0.1)
+        self.relu = nn.ReLU()
+        self.pool = nn.MaxPool2d((1, 2), stride=(1, 2))
+        self.dropout = nn.Dropout(0.5)
+        
+        self.conv3 = nn.Conv2d(25, 50, (1, 5), padding=(0, 2), bias=False)
+        self.bn2 = nn.BatchNorm2d(50, eps=1e-05, momentum=0.1)
+        
+        self.conv4 = nn.Conv2d(50, 100, (1, 5), padding=(0, 2), bias=False)
+        self.bn3 = nn.BatchNorm2d(100, eps=1e-05, momentum=0.1)
+        
+        self.conv5 = nn.Conv2d(100, 200, (1, 5), padding=(0, 2), bias=False)
+        self.bn4 = nn.BatchNorm2d(200, eps=1e-05, momentum=0.1)
+        
+        self.fc = nn.Linear(200 * ((samples // 16)), num_classes)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)  # 添加一个通道维度，使形状变为 (38400, 1, 14, 256)
+        x = self.conv1(x)
+        x = self.conv2(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        
+        x = self.conv3(x)
+        x = self.bn2(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        
+        x = self.conv4(x)
+        x = self.bn3(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        
+        x = self.conv5(x)
+        x = self.bn4(x)
+        x = self.relu(x)
+        x = self.pool(x)
+        x = self.dropout(x)
+        
+        x = x.view(x.size(0), -1)  # 展平张量
+        x = self.fc(x)
+        
+        return x
+    
+

@@ -161,7 +161,7 @@ print('Finished Training')  # 训练完成
 if not os.path.exists('models_save'):
     os.makedirs('models_save')
 # 保存模型状态
-savepoint = {
+checkpoint = {
     'epoch': epoch,
     'model_state_dict': model.state_dict(),
     'optimizer_state_dict': optimizer.state_dict(),
@@ -171,7 +171,7 @@ savepoint = {
     'train_losses': train_losses,
     'train_accuracies': train_accuracies,
 }
-torch.save(savepoint, "models_save/" + model_name + "_model_savepoint.pth")
+torch.save(checkpoint, "models_save/" + model_name + "_model_checkpoint.pth")
 
 
 # 绘制训练损失和准确率图像

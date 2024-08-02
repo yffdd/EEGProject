@@ -28,17 +28,18 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
     data = np.load(filename)
     X = data['X']  # 形状: (38400, 14, 256)
     y = data['y']  # 形状: (38400,) 标签: (0, 1, 2, 3)
-    # 打印数据形状和标签类型
-    print(f"X shape: {X.shape}")
-    print(f"y shape: {y.shape}")
-    print(f"y unique: {np.unique(y)}")
     # 将 NumPy 数组转换为 PyTorch 张量
-    X = torch.tensor(X, dtype=torch.float32)
+    X = torch.tensor(X, dtype=torch.float64)
     y = torch.tensor(y, dtype=torch.long)
 
     # X = torch.rand(38400, 14, 256)  # 生成随机数据
     # y = torch.randint(0, 4, (38400,))  # 生成随机标签
 
+
+    # # 打印数据形状和标签类型
+    # print(f"X shape: {X.shape}")
+    # print(f"y shape: {y.shape}")
+    # print(f"y unique: {np.unique(y)}")
     # 使用 train_test_split 将数据集拆分为训练集和测试集和验证集
     X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=test_size, random_state=random_state)
     X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=test_size, random_state=random_state)
@@ -59,5 +60,10 @@ def deap_loader_fetch(batch_size=64, test_size=0.2, random_state=42, is_print=Fa
         train_labels = train_dataset.targets
         print(f'Unique labels in training set: {train_labels.unique()}')
 
+    print("fetch data done")
+
     return train_loader, test_loader, val_loader
 
+
+if __name__ == '__main__':
+    train_loader, test_loader, val_loader = deap_loader_fetch()
