@@ -24,6 +24,8 @@ from sklearn.model_selection import train_test_split
 # For preprocessing
 deap_config = {
     "dataset_name": "deap",
+    # "databases_root_directory": r"E:/Databases/RawData/DEAP/data_preprocessed_python",
+    # "databases_out_directory": r"E:/Databases/OutData/DEAP/ACSE/",
     "databases_root_directory": r"/bigdisk/322xcq/Databases/RawData/DEAP/data_preprocessed_python",
     "databases_out_directory": r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/",
     "sampling_rate": 128,
@@ -598,4 +600,3 @@ if __name__ == "__main__":
     DeapDP = DatabasesPreprocessing(config=deap_config)
     # 对 DEAP 数据集进行预处理并保存处理后的数据集
     deap_preprocessing(DatabasesPre=DeapDP)
-

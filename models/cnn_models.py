@@ -26,21 +26,30 @@ class CnnC2F2(nn.Module):
 
     Example Usage:
     # Initialize the model
-    data_iter = iter(train_loader)  # Create an iterator for the train_loader to get data in batches
-    inputs, labels = next(data_iter)  # Get one batch of data from the iterator (inputs and labels)
-    model = cnn_models.CnnC6F2(
-        batch_size=train_loader.batch_size,
-        num_channels=inputs.shape[1],
-        num_samples=inputs.shape[2],
-        num_classes=len(labels.unique()),
-        learning_rate=learning_rate
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = cnn_models.CnnC2F2(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
     )
-    model.to(device)
-    optimizer = model.optimizer
-    criterion = model.criterion
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
     """
 
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, model_name='CnnC6F2'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
         super(CnnC2F2, self).__init__()
         self.batch_size = batch_size
         self.num_channels = num_channels
@@ -116,20 +125,29 @@ class CnnC6F2(nn.Module):
 
     Example Usage:
     # Initialize the model
-    data_iter = iter(train_loader)  # Create an iterator for the train_loader to get data in batches
-    inputs, labels = next(data_iter)  # Get one batch of data from the iterator (inputs and labels)
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
     model = cnn_models.CnnC6F2(
-        batch_size=train_loader.batch_size,
-        num_channels=inputs.shape[1],
-        num_samples=inputs.shape[2],
-        num_classes=len(labels.unique()),
-        learning_rate=learning_rate
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
     )
-    model.to(device)
-    optimizer = model.optimizer
-    criterion = model.criterion
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
     """
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, model_name='CnnC6F2'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
         super(CnnC6F2, self).__init__()
         self.batch_size = batch_size
         self.num_channels = num_channels
@@ -233,21 +251,30 @@ class CNN_LSTM(nn.Module):
     
     Example Usage:
     # Initialize the model
-    data_iter = iter(train_loader)  # Create an iterator for the train_loader to get data in batches
-    inputs, labels = next(data_iter)  # Get one batch of data from the iterator (inputs and labels)
-    model = cnn_models.CnnC6F2(
-        batch_size=train_loader.batch_size,
-        num_channels=inputs.shape[1],
-        num_samples=inputs.shape[2],
-        num_classes=len(labels.unique()),
-        learning_rate=learning_rate
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = cnn_models.CNN_LSTM(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
     )
-    model.to(device)
-    optimizer = model.optimizer
-    criterion = model.criterion
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
     """
 
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, hidden_size=256, num_layers=3, model_name='CNN_LSTM'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
         super(CNN_LSTM, self).__init__()
         self.batch_size = batch_size
         self.num_channels = num_channels
@@ -260,7 +287,7 @@ class CNN_LSTM(nn.Module):
 
         # CNN layers
         self.cnn_layers = nn.Sequential(
-            nn.Conv1d(self.input_channels, 64, kernel_size=5, stride=1, padding=2),
+            nn.Conv1d(self.num_channels, 64, kernel_size=5, stride=1, padding=2),
             nn.BatchNorm1d(64),
             nn.ReLU(inplace=True),
             nn.MaxPool1d(kernel_size=1, stride=1),
@@ -327,21 +354,30 @@ class CNNECG(nn.Module):
 
     Example Usage:
     # Initialize the model
-    data_iter = iter(train_loader)  # Create an iterator for the train_loader to get data in batches
-    inputs, labels = next(data_iter)  # Get one batch of data from the iterator (inputs and labels)
-    model = cnn_models.CnnC6F2(
-        batch_size=train_loader.batch_size,
-        num_channels=inputs.shape[1],
-        num_samples=inputs.shape[2],
-        num_classes=len(labels.unique()),
-        learning_rate=learning_rate
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = cnn_models.CNNECG(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
     )
-    model.to(device)
-    optimizer = model.optimizer
-    criterion = model.criterion
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
 
     """
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, model_name='CNNECG'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
         super(CNNECG, self).__init__()
         self.batch_size = batch_size
         self.num_channels = num_channels
@@ -398,22 +434,32 @@ class AdversarialCNN_DeepConvNet(nn.Module):
 
     Example Usage:
     # Initialize the model
-    data_iter = iter(train_loader)  # Create an iterator for the train_loader to get data in batches
-    inputs, labels = next(data_iter)  # Get one batch of data from the iterator (inputs and labels)
-    model = cnn_models.CnnC6F2(
-        batch_size=train_loader.batch_size,
-        num_channels=inputs.shape[1],
-        num_samples=inputs.shape[2],
-        num_classes=len(labels.unique()),
-        learning_rate=learning_rate
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = cnn_models.AdversarialCNN_DeepConvNet(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[1],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[2],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
     )
-    model.to(device)
-    optimizer = model.optimizer
-    criterion = model.criterion
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
+
 
     """
 
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, model_name='AdversarialCNN_DeepConvNet'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
         super(AdversarialCNN_DeepConvNet, self).__init__()
         self.batch_size = batch_size
         self.num_channels = num_channels
