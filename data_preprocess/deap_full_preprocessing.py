@@ -22,7 +22,7 @@ from sklearn.cluster import KMeans
 from sklearn.model_selection import train_test_split
 
 # For preprocessing
-dataset_name = "deap_class3"
+dataset_name = "deap_class4"
 databases_root_directory = r"E:/Databases/RawData/DEAP/data_preprocessed_python"  # Windows 目录
 databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
 
@@ -270,7 +270,7 @@ idx_happy = np.where(kmeans.labels_==happy_label)
 
 
 Y_nnp = np.zeros(Y.shape[0],)
-Y_nnp[idx_sad] = 2
+Y_nnp[idx_sad] = 3
 Y_nnp[idx_fear] = 2
 Y_nnp[idx_neutral] = 0
 Y_nnp[idx_happy] = 1

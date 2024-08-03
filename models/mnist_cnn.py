@@ -125,7 +125,7 @@ for epoch in range(epochs):
         optimizer.step()  # 更新参数
         running_loss += loss.item()  # 累积损失
         
-        _, predicted = torch.max(outputs.data, 1)  # 获取预测结果
+        _, predicted = torch.max(outputs, 1)  # 获取预测结果
         total += labels.size(0)  # 更新样本总数
         running_corrects += (predicted == labels).sum().item()  # 更新正确预测数
 

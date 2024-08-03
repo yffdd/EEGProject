@@ -187,7 +187,25 @@ class CnnC6F2(nn.Module):
         # num_samples = 1024 -> some_size = 14
         # num_samples = 2000 -> some_size = 28
         # num_samples = 2048 -> some_size = 29
-        some_size = 4  # This is just an example, you need to calculate the actual size based on the input shape and the effects of all layers
+        # 定义 num_samples 和 some_size 之间的映射
+        if num_samples == 128:
+            some_size = 2
+        elif num_samples == 256:
+            some_size = 4
+        elif num_samples == 50:
+            some_size = 7
+        elif num_samples == 512:
+            some_size = 7
+        elif num_samples == 1000:
+            some_size = 14
+        elif num_samples == 1024:
+            some_size = 14
+        elif num_samples == 2000:
+            some_size = 28
+        elif num_samples == 2048:
+            some_size = 29
+        else:
+            some_size = 2  # 默认值
         self.fc1 = nn.Linear(128 * some_size, 512)
         self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(512, self.num_classes)
@@ -401,7 +419,7 @@ class CNNECG(nn.Module):
             nn.MaxPool1d(kernel_size=2, stride=2)
         )
         self.classifier = nn.Sequential(
-            nn.Dropout(),
+            nn.Dropout(),  # 默认p值为 0.5
             nn.Linear(8192, 512),
             nn.ReLU(inplace=True),
             nn.Dropout(),
@@ -446,8 +464,6 @@ class AdversarialCNN_DeepConvNet(nn.Module):
     model.to(device)                            # Move model to the specified device (CPU/GPU)
     optimizer = model.optimizer                 # Get the optimizer defined within the model
     criterion = model.criterion                 # Get the loss function defined within the model
-
-
     """
 
     def __init__(self, batch_size=64, num_channels=14, num_samples=256, num_classes=4, learning_rate=0.001, model_name='AdversarialCNN_DeepConvNet'):
