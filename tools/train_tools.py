@@ -232,7 +232,7 @@ def test_model(checkpoint, model, criterion, test_loader, device):
     # 计算平均损失和准确率
     test_loss = running_loss / len(test_loader)
     test_accuracy = correct_predictions / total_samples
-    print(f"test accuracy: {test_accuracy:.4f}, test loss: {test_loss:.4f}")
+    print(f"test accuracy: {100*test_accuracy:.2f}%, test loss: {test_loss:.4f}")
 
 
 def train_model_simple(model, optimizer, criterion, train_loader, val_loader, epochs, device, clip_grad=False, use_val=True, save_model=True):
@@ -283,16 +283,15 @@ def train_model_simple(model, optimizer, criterion, train_loader, val_loader, ep
         epoch_loss = running_loss / len(train_loader)
         epoch_accuracy = correct_predictions / total_samples
 
-        accuracy = correct_predictions / total_samples  # 计算准确率
         train_losses.append(epoch_loss)  # 记录平均损失
         train_accuracies.append(epoch_accuracy)  # 记录准确率
 
         if use_val:
             # 评估模型在验证集上的性能
             val_loss, val_accuracy = evaluate_model(model=model, criterion=criterion, val_loader=val_loader, device=device)
-            print(f"Epoch [{epoch}/{epochs}], train accuracy: {100*accuracy:.2f}%, train loss: {epoch_loss:.4f}, val accuracy: {100*val_accuracy:.2f}%, val loss: {val_loss:.4f}")
+            print(f"Epoch [{epoch}/{epochs}], train accuracy: {100*epoch_accuracy:.2f}%, train loss: {epoch_loss:.4f}, val accuracy: {100*val_accuracy:.2f}%, val loss: {val_loss:.4f}")
         else:
-            print(f"Epoch [{epoch}/{epochs}], train accuracy: {100*accuracy:.2f}%, train loss: {epoch_loss:.4f}")  # 打印准确率和平均损失
+            print(f"Epoch [{epoch}/{epochs}], train accuracy: {100*epoch_accuracy:.2f}%, train loss: {epoch_loss:.4f}")  # 打印准确率和平均损失
 
     # 保存模型的检查点
     checkpoint = {

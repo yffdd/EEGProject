@@ -15,7 +15,7 @@ from sklearn.model_selection import train_test_split
 
 
 
-def deap_loader_fetch_acse(batch_size=64, test_size=0.2, random_state=42, is_print=False, default_type=torch.float32):
+def deap_loader_fetch_acse(batch_size=64, test_size=0.2, random_state=42, is_print=True, default_type=torch.float32):
     """
     加载DEAP数据集, 并返回训练集和测试集以及验证集
     """
@@ -61,11 +61,10 @@ def deap_loader_fetch_acse(batch_size=64, test_size=0.2, random_state=42, is_pri
 
     print("fetch data complete")
 
-    return train_loader, test_loader, val_loader
+    return train_loader, val_loader, test_loader
 
 
-def deap_loader_fetch_sgmc(batch_size=64, is_print=False, default_type=torch.float32):
-
+def deap_loader_fetch_sgmc(batch_size=64, is_print=True, default_type=torch.float32):
 
     print("fetch DEAP dataset...")
     # 提取数据集
@@ -80,19 +79,19 @@ def deap_loader_fetch_sgmc(batch_size=64, is_print=False, default_type=torch.flo
 
     # 将 numpy 数组转换为 PyTorch 张量
     X_train = torch.tensor(X_train, dtype=default_type)
-    X_test = torch.tensor(X_test, dtype=default_type)
     X_val = torch.tensor(X_val, dtype=default_type)
+    X_test = torch.tensor(X_test, dtype=default_type)
     y_train = torch.tensor(y_train, dtype=torch.long)
-    y_test = torch.tensor(y_test, dtype=torch.long)
     y_val = torch.tensor(y_val, dtype=torch.long)
+    y_test = torch.tensor(y_test, dtype=torch.long)
 
     # 创建 TensorDataset 和 DataLoader
     train_dataset = TensorDataset(X_train, y_train)
-    test_dataset = TensorDataset(X_test, y_test)
     val_dataset = TensorDataset(X_val, y_val)
+    test_dataset = TensorDataset(X_test, y_test)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     if is_print:
         # 打印训练集的大小和形状
@@ -104,11 +103,11 @@ def deap_loader_fetch_sgmc(batch_size=64, is_print=False, default_type=torch.flo
 
     print("fetch data complete")
 
-    return train_loader, test_loader, val_loader
+    return train_loader, val_loader, test_loader
 
 
-def eeg_movement_loader_fetch(batch_size=64, is_print=False, default_type=torch.float32):
-    data_path = "E:/Databases/OutData/EEG-MOVEMENT/EEG movement test data 240424/data_slice"
+def eeg_movement_loader_fetch(batch_size=64, is_print=True, default_type=torch.float32):
+    data_path = "E:/Databases/OutData/EEG movement/EEG movement data 240424/data_slice"
     X = np.load(os.path.join(data_path, 'X.npy'))
     y = np.load(os.path.join(data_path, 'y.npy'))
     # 将 NumPy 数组转换为 PyTorch 张量
@@ -120,20 +119,20 @@ def eeg_movement_loader_fetch(batch_size=64, is_print=False, default_type=torch.
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
     # 创建 TensorDataset 和 DataLoader
     train_dataset = TensorDataset(X_train, y_train)
-    test_dataset = TensorDataset(X_test, y_test)
     val_dataset = TensorDataset(X_val, y_val)
+    test_dataset = TensorDataset(X_test, y_test)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     if is_print:
         print(f'training set size:          {len(train_dataset)}')
-        print(f'training set data shape:    {X_test.shape}')
-        print(f'training set labels shape:  {y_test.shape}')
+        print(f'training set data shape:    {X_train.shape}')
+        print(f'training set labels shape:  {X_train.shape}')
         # 打印测试集的标签唯一值
-        print(f'training set unique labels: {np.unique(y_test)}')
+        print(f'training set unique labels: {np.unique(y_train)}')
 
-    return train_loader, test_loader, val_loader
+    return train_loader, val_loader, test_loader
 
 if __name__ == '__main__':
     train_loader, test_loader, val_loader = eeg_movement_loader_fetch(is_print=True)

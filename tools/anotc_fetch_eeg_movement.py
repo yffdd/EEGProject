@@ -2,7 +2,7 @@
 File: anotc_fetch_eeg_movement.py
 Author: xiales
 Date: 2024-08-01
-Description: 用于处理匿名科创地面站导出的.csv文件中的数据 并将其保存为 csv 和 npy 格式
+Description: 用于处理匿名科创地面站导出的.csv文件中的数据 处理脑电运动意识标签(每个样本单个标签值) 并将其保存为 csv 和 npy 格式
 """
 
 import os
@@ -395,9 +395,9 @@ def load_data_and_labels(data_label_dict, save_data=False, save_path=None):
 if __name__ == "__main__":
 
     # 原始数据路径
-    raw_data_path = "E:/Databases/RawData/EEG-MOVEMENT/EEG movement test data 240424"
+    raw_data_path = "E:/Databases/RawData/EEG movement/EEG movement data 240424"
     # 保存数据路径
-    out_data_path = "E:/Databases/OutData/EEG-MOVEMENT/EEG movement test data 240424/data_slice"
+    out_data_path = "E:/Databases/OutData/EEG movement/EEG movement data 240424/data_slice"
     ch_num = 4
     slice_to_nums = [8, [1,2]]
     length = 1000
