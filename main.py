@@ -18,19 +18,21 @@ from tqdm import tqdm, tgrange
 
 # 自定义模块
 from models import cnn_models
-from tools import data_fetch_tools, plot_tools, train_tools
+from tools import data_fetch_tools, plot_tools, train_tools, anotc_fetch_eeg_emotion
 
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'using device: {device}')
 # 设置超参数
-epochs = 100
+epochs = 50
 batch_size = 64
 learning_rate = 0.001
 
 # 数据提取
-train_loader, test_loader, val_loader = data_fetch_tools.eeg_movement_loader_fetch(batch_size=batch_size)
+save_path = "E:/Databases/OutData/EEG_Emotion/not_preprocess"
+# train_loader, test_loader, val_loader = data_fetch_tools.eeg_movement_loader_fetch(batch_size=32, is_print=True)
+train_loader, test_loader, val_loader = anotc_fetch_eeg_emotion.fetch_eeg_emotion_loader(data_path=save_path, batch_size=32, is_print=True)
 
 # Initialize the model
 print("model initialization...")
@@ -65,8 +67,8 @@ checkpoint = train_tools.train_model(
     metric='val_loss'
 )
 
-# 绘制准确率与损失函数图像
-plot_tools.plot_training_metrics(train_losses=checkpoint["train_losses"], train_accuracies=checkpoint["train_accuracies"], is_save=True, save_name=model.model_name + "_training_metrics")
+# # 绘制准确率与损失函数图像
+# plot_tools.plot_training_metrics(train_losses=checkpoint["train_losses"], train_accuracies=checkpoint["train_accuracies"], is_save=True, save_name=model.model_name + "_training_metrics")
 
 # 测试模型
 train_tools.test_model(checkpoint=checkpoint, model=model, criterion=criterion, test_loader=test_loader, device=device)

@@ -107,7 +107,7 @@ def deap_loader_fetch_sgmc(batch_size=64, is_print=True, default_type=torch.floa
 
 
 def eeg_movement_loader_fetch(batch_size=64, is_print=True, default_type=torch.float32):
-    data_path = "E:/Databases/OutData/EEG movement/EEG movement data 240424/data_slice"
+    data_path = "E:/Databases/OutData/EEG_Movement/EEG movement data 240424/data_slice"
     X = np.load(os.path.join(data_path, 'X.npy'))
     y = np.load(os.path.join(data_path, 'y.npy'))
     # 将 NumPy 数组转换为 PyTorch 张量

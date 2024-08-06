@@ -41,7 +41,9 @@ def fetch_data_from_file(filename, num_channels, num_samples, label_column, reta
     labels = dataframe.iloc[:, label_column].values
 
     # 提取有效数据列
-    data = dataframe.iloc[:, :num_channels].values
+    data = dataframe.iloc[:, :num_channels].values.T  # 将数据转置以使得结果符合 (data_size, num_channels, num_samples)
+
+    # TODO: 对 data 数据预处理，例如归一化、滤波等
 
     # 初始化数据和标签列表
     X = []  # 初始化X为空列表，用于存储数据段
@@ -62,16 +64,15 @@ def fetch_data_from_file(filename, num_channels, num_samples, label_column, reta
                 end_idx = start_idx + num_samples  # 计算数据段的结束索引
                 while end_idx <= i or (retain_tail and start_idx < i):
                     if end_idx <= i:
-                        # 提取数据段并转置以符合 (data_size, num_channels, num_samples)
-                        segment = data[start_idx:end_idx].T  # 转置数据段
+                        segment = data[:, start_idx:end_idx]  # 提取数据段，形状为 (num_channels, num_samples)
                         X.append(segment)  # 添加数据段到X
                         y.append(labels[start_idx])  # 添加对应的标签到y
                     elif retain_tail:
                         # 保留尾部数据时，确保片段长度为 num_samples
-                        tail_segment = data[start_idx:i]  # 获取尾部数据段
-                        needed_len = num_samples - len(tail_segment)  # 计算需要补足的长度
-                        if start_idx + needed_len <= len(data):
-                            segment = np.vstack((tail_segment, data[i:i + needed_len])).T  # 合并并转置数据段
+                        tail_segment = data[:, start_idx:i]  # 获取尾部数据段
+                        needed_len = num_samples - tail_segment.shape[1]  # 计算需要补足的长度
+                        if start_idx + needed_len <= data.shape[1]:
+                            segment = np.hstack((tail_segment, data[:, i:i + needed_len]))  # 合并数据段
                             X.append(segment)  # 添加数据段到X
                             y.append(labels[start_idx])  # 添加对应的标签到y
                     start_idx += num_samples  # 更新开始索引
@@ -83,8 +84,7 @@ def fetch_data_from_file(filename, num_channels, num_samples, label_column, reta
     if start_idx is not None and len(labels) - start_idx >= num_samples:
         end_idx = start_idx + num_samples  # 计算数据段的结束索引
         while end_idx <= len(labels):
-            # 提取数据段并转置以符合 (data_size, num_channels, num_samples)
-            segment = data[start_idx:end_idx].T  # 转置数据段
+            segment = data[:, start_idx:end_idx]  # 提取数据段，形状为 (num_channels, num_samples)
             X.append(segment)  # 添加数据段到X
             y.append(labels[start_idx])  # 添加对应的标签到y
             start_idx += num_samples  # 更新开始索引
@@ -102,7 +102,7 @@ def fetch_data_from_file(filename, num_channels, num_samples, label_column, reta
     return X, y  # 返回数据和标签
 
 
-def fetch_data_from_folder(folder_path, num_channels, num_samples, label_column, save_to_file, retain_tail=False):
+def fetch_data_from_folder(folder_path, num_channels, num_samples, label_column, retain_tail=False, save_to_file=True, save_path=None):
     """
     从文件夹中的所有CSV文件中提取数据段，并返回数据和标签。
 
@@ -142,17 +142,104 @@ def fetch_data_from_folder(folder_path, num_channels, num_samples, label_column,
         all_X, all_y = None, None  # 如果没有有效数据，返回None
         print("No valid data found in any file in the folder.")  # 输出无有效数据的提示
 
+    # 标签转换, 将标签转换为[0, 1, 2, 3]
+    label_transform_dict = {1:0, 3:1, 4:2}
+    all_y = transform_labels(all_y, label_transform_dict)
+    # 数据抽取, 抽取部分数据使得各类数据数量平衡
+    # all_X, all_y = balance_dataset_by_min_class(all_X, all_y)
+
     # 保存数据到文件
     if save_to_file:
-        # save_file_path = os.path.join(folder_path, 'numpy_data_file')  # 设置保存路径
-        save_file_path = folder_path
+        # 设置保存路径
+        if save_path is None:
+            save_file_path = folder_path
+        else:
+            save_file_path = save_path
         if not os.path.exists(save_file_path):
             os.makedirs(save_file_path)  # 如果路径不存在，创建路径
         np.save(os.path.join(save_file_path, 'X.npy'), all_X)  # 保存数据到X.npy
         np.save(os.path.join(save_file_path, 'y.npy'), all_y)  # 保存标签到y.npy
+        print(f"X shape: {all_X.shape}")  # 打印 X 的形状
+        print(f"y shape: {all_y.shape}")  # 打印 y 的形状
         print(f"Data saved to {save_file_path}")  # 输出保存路径
 
     return all_X, all_y  # 返回所有数据和标签
+
+
+def transform_labels(y, label_transform_dict):
+    """
+    根据标签转换字典，将旧标签转换为新标签。
+
+    参数：
+    y (np.ndarray): 包含旧标签的NumPy数组。
+    label_change_dict (dict): 标签转换字典，其中键是旧的标签值，值是新的标签值。
+
+    返回：
+    np.ndarray: 转换后的标签数组。
+    """
+    # 创建一个与 y 形状相同的空数组，用于存储新标签
+    new_y = np.empty_like(y)
+
+    # 遍历旧标签，转换为新标签
+    for old_label, new_label in label_transform_dict.items():
+        new_y[y == old_label] = new_label
+
+    return new_y
+
+
+import numpy as np
+
+def balance_dataset_by_min_class(X, y):
+    """
+    根据最小标签数量，从数据中提取平衡的子集。
+
+    参数：
+    X (np.ndarray): 输入特征数据，形状为 (data_size, num_channels, num_samples)。
+    y (np.ndarray): 输入标签数据，形状为 (data_size,)。
+
+    返回：
+    X_subset (np.ndarray): 提取的特征数据子集。
+    y_subset (np.ndarray): 提取的标签数据子集。
+    """
+
+    # 获取每个标签的数量
+    unique_labels, counts = np.unique(y, return_counts=True)
+    label_counts_dict = dict(zip(unique_labels, counts))
+
+    # 打印调整前的标签数量
+    print("Number of labels before adjustment:")
+    for label, count in label_counts_dict.items():
+        print(f"Label: {label}, Count: {count}")  # 打印每个标签的数量
+
+    # 找到最小标签数量
+    min_count = min(label_counts_dict.values())
+
+    X_subset = []
+    y_subset = []
+
+    for label in unique_labels:
+        # 获取对应标签的索引
+        label_indices = np.where(y == label)[0]
+        
+        # 随机抽取最小数量的索引
+        selected_indices = np.random.choice(label_indices, min_count, replace=False)
+        
+        # 添加对应的数据和标签到子集中
+        X_subset.append(X[selected_indices])
+        y_subset.append(y[selected_indices])
+
+    # 合并子集
+    X_subset = np.concatenate(X_subset, axis=0)
+    y_subset = np.concatenate(y_subset, axis=0)
+
+    # 打印调整后的标签数量
+    print("Number of labels after adjustment:")
+    adjusted_label_counts_dict = {label: min_count for label in unique_labels}
+    for label, count in adjusted_label_counts_dict.items():
+        print(f"Label: {label}, Count: {count}")  # 打印每个标签的数量
+
+    return X_subset, y_subset
+
 
 def fetch_eeg_emotion_loader(data_path, batch_size=64, is_print=True, default_type=torch.float32):
     """
@@ -193,11 +280,13 @@ def fetch_eeg_emotion_loader(data_path, batch_size=64, is_print=True, default_ty
         for label, count in zip(unique, counts):
             print(f"Label: {label}, Count: {count}")  # 打印每个标签的数量
 
+
     return train_loader, val_loader, test_loader
 
 if __name__ == '__main__':
     
-    folder_path = "D:/Downloads"
+    folder_path = "E:/Databases/RawData/EEG_Emotion"
+    save_path = "E:/Databases/OutData/EEG_Emotion/not_preprocess"
 
     num_channels = 8
     num_samples = 250
@@ -205,9 +294,9 @@ if __name__ == '__main__':
     save_to_file = True
     retain_tail = True
 
-    X, y = fetch_data_from_folder(folder_path, num_channels, num_samples, label_column, save_to_file, retain_tail)
+    X, y = fetch_data_from_folder(folder_path, num_channels, num_samples, label_column, retain_tail, save_to_file, save_path)
 
-    train_loader, val_loader, test_loader = fetch_eeg_emotion_loader(data_path=folder_path, batch_size=32, is_print=True)
+    # train_loader, val_loader, test_loader = fetch_eeg_emotion_loader(data_path=save_path, batch_size=32, is_print=True)
 
 
 
