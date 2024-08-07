@@ -241,14 +241,15 @@ def balance_dataset_by_min_class(X, y):
     return X_subset, y_subset
 
 
-def fetch_eeg_emotion_loader(data_path, batch_size=64, is_print=True, default_type=torch.float32):
+def fetch_data_loader(data_path, batch_size=64, is_print=True, random_state=42, default_type=torch.float32):
     """
-    加载EEG情感数据集，创建数据加载器。
+    加载数据集，创建数据加载器。
 
     参数：
     data_path (str): 数据路径，应包含 'X.npy' 和 'y.npy' 文件。
     batch_size (int): 数据加载器的批量大小，默认为64。
     is_print (bool): 是否打印数据集信息，默认为True。
+    random_state (int): 随机种子，默认为42。
     default_type (torch.dtype): 数据类型，默认为torch.float32。
 
     返回：
@@ -263,8 +264,8 @@ def fetch_eeg_emotion_loader(data_path, batch_size=64, is_print=True, default_ty
     X = torch.tensor(X, dtype=default_type)
     y = torch.tensor(y, dtype=torch.long)
     # 使用 train_test_split 将数据集拆分为训练集和验证集和测试集
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
+    X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=random_state)
     # 创建 TensorDataset 和 DataLoader
     train_dataset = TensorDataset(X_train, y_train)
     val_dataset = TensorDataset(X_val, y_val)
@@ -296,7 +297,7 @@ if __name__ == '__main__':
 
     X, y = fetch_data_from_folder(folder_path, num_channels, num_samples, label_column, retain_tail, save_to_file, save_path)
 
-    # train_loader, val_loader, test_loader = fetch_eeg_emotion_loader(data_path=save_path, batch_size=32, is_print=True)
+    train_loader, val_loader, test_loader = fetch_data_loader(data_path=save_path, batch_size=32, is_print=True)
 
 
 

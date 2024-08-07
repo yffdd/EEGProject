@@ -21,8 +21,7 @@ def deap_loader_fetch_acse(batch_size=64, test_size=0.2, random_state=42, is_pri
     """
     print("fetch DEAP dataset...")
     # 加载数据集
-    # dataset_name = "deap"
-    dataset_name = "deap_class4"
+    dataset_name = "deap"
     databases_out_directory = r"E:/Databases/OutData/DEAP/ACSE/"  # Windows 目录
     # databases_out_directory = r"/bigdisk/322xcq/Databases/OutData/DEAP/ACSE/"  # school-gpu 目录
     filename = databases_out_directory + dataset_name + ".npz"
@@ -135,6 +134,8 @@ def eeg_movement_loader_fetch(batch_size=64, is_print=True, default_type=torch.f
     return train_loader, val_loader, test_loader
 
 if __name__ == '__main__':
-    train_loader, test_loader, val_loader = eeg_movement_loader_fetch(is_print=True)
+
+    # train_loader, test_loader, val_loader = eeg_movement_loader_fetch(is_print=True)
+    train_loader, test_loader, val_loader = deap_loader_fetch_acse()
 
     
