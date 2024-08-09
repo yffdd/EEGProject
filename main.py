@@ -20,17 +20,20 @@ from tqdm import tqdm, tgrange
 from models import cnn_models
 from tools import data_fetch_tools, plot_tools, train_tools, anotc_fetch_eeg_emotion
 
+# 设置系统的Dataset根目录
+sys_dataset_root_dir = 'E:/'  # xiales-pc Windows系统路径
+# sys_dataset_root_dir = '/bigdisk/322xcq/'  # 学校服务器系统路径
 
 # 检查是否有可用的 GPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(f'using device: {device}')
 # 设置超参数
-epochs = 100
+epochs = 50
 batch_size = 128
 learning_rate = 0.001
 
 # 数据提取
-train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch_acse(batch_size=32, is_print=True)
+train_loader, test_loader, val_loader = data_fetch_tools.seed_loader_fetch(batch_size=32, is_print=True)
 
 # save_path = "E:/Databases/OutData/EEG_Emotion/not_preprocess"
 # train_loader, test_loader, val_loader = anotc_fetch_eeg_emotion.fetch_data_loader(data_path=save_path, batch_size=32, is_print=True)
@@ -40,6 +43,7 @@ print("model initialization...")
 data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
 inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
 model = cnn_models.CnnC6F2(
+# model = cnn_models.AdversarialCNN_DeepConvNet(
     batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
     num_channels=inputs.shape[1],           # Set the number of channels from the input shape
     num_samples=inputs.shape[2],            # Set the number of samples from the input shape

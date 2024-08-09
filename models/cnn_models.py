@@ -206,7 +206,8 @@ class CnnC6F2(nn.Module):
             some_size = 29
         else:
             some_size = 2  # 默认值
-        self.fc1 = nn.Linear(128 * some_size, 512)
+        # self.fc1 = nn.Linear(128 * some_size, 512)
+        self.fc1 = nn.Linear(384, 512)
         self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(512, self.num_classes)
 
