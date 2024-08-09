@@ -17,10 +17,10 @@ sys.path.append(relative_path)  # 将工程路径添加到系统路径中
 
 import torch
 from models import cnn_models
-from tools import data_fetch_tools, plot_tools
+from tools import fetch_tools, plot_tools
 
 
-def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, device, clip_grad=False, use_val=True, save_model=True, use_early_stopping=True, patience=5, metric='val_loss'):
+def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, device, clip_grad=False, use_val=True, save_model=True, use_early_stopping=True, patience=5, metric='val_loss', scheduler=None):
     """
     训练模型并在每个 epoch 后记录损失和准确率。
 
@@ -38,6 +38,7 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, d
     - use_early_stopping (bool): 是否使用早停机制。默认值为 True。
     - patience (int): 早停的耐心值，默认值为 5。
     - metric (str): 用于早停的指标，默认值为 'val_loss'。可选值为 'val_loss' 或 'val_acc'。
+    - scheduler (torch.optim.lr_scheduler._LRScheduler): 学习率调度器。默认值为 None。
 
     返回:
     - checkpoint (dict): 包含模型状态、优化器状态和训练参数等信息的字典。
@@ -77,6 +78,10 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, d
             correct_predictions += torch.sum((preds  == labels)).item()  # 计算正确预测的数量
             total_samples += labels.size(0)  # 更新样本总数
 
+        if scheduler is not None:
+            # 每个 epoch 结束后，调用调度器来调整学习率
+            scheduler.step()
+
         # 计算每个epoch的平均损失和准确率
         epoch_loss = running_loss / len(train_loader)
         epoch_accuracy = correct_predictions / total_samples
@@ -99,7 +104,7 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, d
                     checkpoint = {
                         'epoch': epoch,
                         'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': model.optimizer.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
                         'loss': running_loss,
                         'learning_rate': model.learning_rate,
                         'batch_size': model.batch_size,
@@ -116,7 +121,7 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, d
                     checkpoint = {
                         'epoch': epoch,
                         'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': model.optimizer.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
                         'loss': running_loss,
                         'learning_rate': model.learning_rate,
                         'batch_size': model.batch_size,
@@ -141,7 +146,7 @@ def train_model(model, optimizer, criterion, train_loader, val_loader, epochs, d
         checkpoint = {
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': model.optimizer.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
             'loss': running_loss,
             'learning_rate': model.learning_rate,
             'batch_size': model.batch_size,
@@ -297,7 +302,7 @@ def train_model_simple(model, optimizer, criterion, train_loader, val_loader, ep
     checkpoint = {
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': model.optimizer.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
         'loss': running_loss,
         'learning_rate': model.learning_rate,
         'batch_size': model.batch_size,
@@ -332,7 +337,7 @@ if __name__  == '__main__':
     learning_rate = 0.001
 
     # 数据提取
-    train_loader, test_loader, val_loader = data_fetch_tools.deap_loader_fetch(batch_size=batch_size)
+    train_loader, test_loader, val_loader = fetch_tools.deap_loader_fetch(batch_size=batch_size)
 
     # Initialize the model
     print("model initialization...")

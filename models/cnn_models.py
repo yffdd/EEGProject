@@ -190,6 +190,8 @@ class CnnC6F2(nn.Module):
         # 定义 num_samples 和 some_size 之间的映射
         if num_samples == 128:
             some_size = 2
+        elif num_samples == 250:
+            some_size = 4
         elif num_samples == 256:
             some_size = 4
         elif num_samples == 50:
@@ -206,8 +208,8 @@ class CnnC6F2(nn.Module):
             some_size = 29
         else:
             some_size = 2  # 默认值
-        # self.fc1 = nn.Linear(128 * some_size, 512)
-        self.fc1 = nn.Linear(384, 512)
+        self.fc1 = nn.Linear(128 * some_size, 512)
+        # self.fc1 = nn.Linear(384, 512)
         self.dropout = nn.Dropout(0.1)
         self.fc2 = nn.Linear(512, self.num_classes)
 
@@ -504,8 +506,6 @@ class AdversarialCNN_DeepConvNet(nn.Module):
         self.fc = nn.Linear(200 * ((self.num_samples // 16)), self.num_classes)
 
         # Initialize optimizer and loss function
-        self.module_name = model_name
-        self.learning_rate = learning_rate
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         self.criterion = torch.nn.CrossEntropyLoss()
 
@@ -542,3 +542,81 @@ class AdversarialCNN_DeepConvNet(nn.Module):
         return x
     
 
+# 定义卷积网络结构
+class ConvNet(nn.Module):
+    """
+    Ref: https://github.com/yezi0511/SEED-Emotion-Recognition
+    The model originally used for the SEED dataset.
+
+    input: (batch_size, 1, num_channels, num_samples)
+    output: (batch_size, num_classes)
+
+    Example Usage:
+    # Initialize the model
+    data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
+    inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
+    model = ConvNet(
+        batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
+        num_channels=inputs.shape[2],           # Set the number of channels from the input shape
+        num_samples=inputs.shape[3],            # Set the number of samples from the input shape
+        num_classes=len(labels.unique()),       # Set the number of classes by counting unique labels
+        learning_rate=learning_rate             # Set the learning rate
+    )
+    model.to(device)                            # Move model to the specified device (CPU/GPU)
+    optimizer = model.optimizer                 # Get the optimizer defined within the model
+    scheduler = model.scheduler                 # Get the learning rate scheduler defined within the model
+    criterion = model.criterion                 # Get the loss function defined within the model
+    """
+    def __init__(self, batch_size=24, num_channels=62, num_samples=24, num_classes=3, learning_rate=0.0001, model_name='ConvNet'):
+        """
+        Args:
+        - batch_size (int): Size of each batch of data.
+        - num_channels (int): Number of input channels (e.g., EEG channels).
+        - num_samples (int): Number of samples per channel (e.g., length of the time series).
+        - num_classes (int): Number of output classes (e.g., number of classes for classification).
+        - learning_rate (float): Learning rate for the optimizer.
+        - model_name (str): Name of the model.
+        """
+        super(ConvNet, self).__init__()
+        self.batch_size = batch_size
+        self.num_channels = num_channels
+        self.num_samples = num_samples
+        self.num_classes = num_classes
+        self.learning_rate = learning_rate
+        self.model_name = model_name
+
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=5, stride=(1, 1), padding=(2, 2), bias=True),
+            nn.BatchNorm2d(32),
+            nn.LeakyReLU(),
+            nn.AvgPool2d(kernel_size=2, stride=2)
+        )
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=5, stride=(1, 1), padding=(2, 2), bias=True),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(),
+            nn.AvgPool2d(kernel_size=2, stride=2)
+        )
+        self.layer3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=3, stride=(1, 1), padding=(1, 1), bias=True),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(),
+            nn.AvgPool2d(kernel_size=2, stride=2)
+        )
+        self.fc1 = nn.Linear(128 * 7 * 25, 256, bias=True)
+        self.fc2 = nn.Linear(256, self.num_classes, bias=True)
+
+        # Initialize optimizer and loss function
+        self.optimizer = torch.optim.Adam(self.parameters(), lr=learning_rate, weight_decay=0.001)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=3, gamma=0.95)
+        self.criterion = torch.nn.CrossEntropyLoss()
+
+    def forward(self, x):
+        x = x.unsqueeze(1) # 添加一个额外的维度，以匹配模型输入的形状
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = out.reshape(out.size(0), -1)
+        out = self.fc1(out)
+        out = self.fc2(out)
+        return out

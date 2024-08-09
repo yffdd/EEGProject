@@ -18,32 +18,32 @@ from tqdm import tqdm, tgrange
 
 # 自定义模块
 from models import cnn_models
-from tools import data_fetch_tools, plot_tools, train_tools, anotc_fetch_eeg_emotion
+from tools import fetch_tools, plot_tools, train_tools, anotc_fetch_eeg_emotion
 
 # 设置系统的Dataset根目录
 sys_dataset_root_dir = 'E:/'  # xiales-pc Windows系统路径
-# sys_dataset_root_dir = '/bigdisk/322xcq/'  # 学校服务器系统路径
+# sys_dataset_root_dir = '/bigdisk/322xcq/'  # 服务器系统路径
+
 
 # 检查是否有可用的 GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:2" if torch.cuda.is_available() else "cpu")
 print(f'using device: {device}')
 # 设置超参数
-epochs = 50
-batch_size = 128
-learning_rate = 0.001
+epochs = 30
+batch_size = 24
+learning_rate = 0.0001
 
 # 数据提取
-train_loader, test_loader, val_loader = data_fetch_tools.seed_loader_fetch(batch_size=32, is_print=True)
+train_loader, val_loader, test_loader = fetch_tools.seed_loader_fetch(batch_size=batch_size, is_print=True)
 
 # save_path = "E:/Databases/OutData/EEG_Emotion/not_preprocess"
-# train_loader, test_loader, val_loader = anotc_fetch_eeg_emotion.fetch_data_loader(data_path=save_path, batch_size=32, is_print=True)
+# train_loader, val_loader, test_loader = anotc_fetch_eeg_emotion.fetch_data_loader(data_path=save_path, batch_size=32, is_print=True)
 
 # Initialize the model
 print("model initialization...")
 data_iter = iter(train_loader)              # Create an iterator for the train_loader to get data in batches
 inputs, labels = next(data_iter)            # Get one batch of data from the iterator (inputs and labels)
-model = cnn_models.CnnC6F2(
-# model = cnn_models.AdversarialCNN_DeepConvNet(
+model = cnn_models.ConvNet(
     batch_size=train_loader.batch_size,     # Set the batch size from the train_loader
     num_channels=inputs.shape[1],           # Set the number of channels from the input shape
     num_samples=inputs.shape[2],            # Set the number of samples from the input shape
@@ -54,6 +54,8 @@ model.to(device)                            # Move model to the specified device
 optimizer = model.optimizer                 # Get the optimizer defined within the model
 criterion = model.criterion                 # Get the loss function defined within the model
 print("model initialization complete")
+scheduler = model.scheduler                 # Get the learning rate scheduler defined within the model
+
 
 # training model
 checkpoint = train_tools.train_model(
@@ -69,7 +71,8 @@ checkpoint = train_tools.train_model(
     save_model=True,
     use_early_stopping=False,
     patience=10,
-    metric='val_loss'
+    metric='val_loss',
+    scheduler=scheduler
 )
 
 # # 绘制准确率与损失函数图像

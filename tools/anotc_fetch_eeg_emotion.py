@@ -260,9 +260,13 @@ def fetch_data_loader(data_path, batch_size=64, is_print=True, random_state=42, 
     X = np.load(os.path.join(data_path, 'X.npy'))
     y = np.load(os.path.join(data_path, 'y.npy'))
 
+    # 平衡数据集
+    X, y = balance_dataset_by_min_class(X, y)
+
     # 将 NumPy 数组转换为 PyTorch 张量
     X = torch.tensor(X, dtype=default_type)
     y = torch.tensor(y, dtype=torch.long)
+    
     # 使用 train_test_split 将数据集拆分为训练集和验证集和测试集
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=random_state)
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.2, random_state=random_state)
